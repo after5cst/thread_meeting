@@ -18,6 +18,16 @@ class JoinTest(unittest.TestCase):
                 thread_meeting.Join()
             self.assertTrue("Meeting already joined on this thread" 
                 in str(context.exception))
+    
+    def test_cannot_enter_join_while_joined(self):
+        join1 = thread_meeting.Join()
+        join2 = thread_meeting.Join()
+        with join1:
+            with self.assertRaises(RuntimeError) as context:
+                with join2:
+                    pass
+            self.assertTrue("Meeting already joined on thread" 
+                in str(context.exception), str(context.exception))
 
 
 if __name__ == '__main__':
