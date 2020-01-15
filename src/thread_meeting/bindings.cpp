@@ -1,7 +1,12 @@
 #include "attendee.h"
-#include "join.h"
+#include "baton.h"
+#include "enter_exit.h"
+#include "functions.h"
 #include "keep.h"
 #include "take.h"
+
+//#include "attendee_scope.h"
+//#include "baton_scope.h"
 
 PYBIND11_MODULE(thread_meeting, m) {
     m.doc() = R"pbdoc(
@@ -13,14 +18,16 @@ PYBIND11_MODULE(thread_meeting, m) {
         .. autosummary::
            :toctree: _generate
 
+           attend
            Attendee
-           Join
            Keep
            Take
     )pbdoc";
 
+    bind_functions(m);
     Attendee::bind(m);
-    Join::bind(m);
+    Baton::bind(m);
+    EnterExit::bind(m);
     Keep::bind(m);
     Take::bind(m);
 

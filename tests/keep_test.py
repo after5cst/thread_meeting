@@ -22,7 +22,6 @@ class KeepTest(unittest.TestCase):
         
         with self.assertRaises(AttributeError) as context:
             keep.name = new_name
-            
         self.assertTrue("can't set attribute" in str(context.exception))
     
     def test_keep_starts_with_no_takes(self):
