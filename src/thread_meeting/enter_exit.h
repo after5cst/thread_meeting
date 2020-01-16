@@ -8,6 +8,7 @@ class EnterExit
 {
 public:
     static void bind(pybind11::module&);
+    virtual ~EnterExit() = default;
 
     virtual pybind11::object on_enter() = 0;
     virtual pybind11::object on_exit(pybind11::object exc_type,

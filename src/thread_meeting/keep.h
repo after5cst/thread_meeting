@@ -17,7 +17,7 @@ public:
         : name(name_in), payload(payload_in) {}
 
     // Methods for Python access
-    std::unique_ptr<Take> create_take(std::string take_name);
+    Take::pointer_t create_take(std::string take_name);
     bool finished() const;
     pybind11::list acknowledged() const;
     pybind11::list protested() const;

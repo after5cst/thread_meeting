@@ -22,12 +22,9 @@ void Keep::bind(pybind11::module& m)
             );
 }
 
-std::unique_ptr<Take> Keep::create_take(std::string name)
+Take::pointer_t Keep::create_take(std::string name)
 {
     auto ptr = std::make_unique<Take>(name, payload);
-//    auto new_item = std::pair< std::string, Take::status_t >(
-//                name, ptr->status);
-//    auto insert_result = m_map.insert(new_item);
     auto insert_result = m_map.insert({name, ptr->status});
     if (!insert_result.second)
     {

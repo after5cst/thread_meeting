@@ -1,9 +1,12 @@
 #ifndef ATTENDEE_H
 #define ATTENDEE_H
 #include <memory>
+#include <queue>
 #include <pybind11/pybind11.h>
 
 #include "baton_scope.h"
+#include "keep.h"
+#include "take.h"
 
 class Attendee : public std::enable_shared_from_this<Attendee>
 {
@@ -15,7 +18,10 @@ public:
 
     std::string name;
     bool valid = true;
+
+    
 private:
+    std::queue<Take::pointer_t> m_queue;
 };
 
 #endif // ATTENDEE_H
