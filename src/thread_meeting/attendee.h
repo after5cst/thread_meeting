@@ -1,7 +1,7 @@
 #ifndef ATTENDEE_H
 #define ATTENDEE_H
+#include <deque>
 #include <memory>
-#include <queue>
 #include <pybind11/pybind11.h>
 
 #include "baton_scope.h"
@@ -18,12 +18,9 @@ public:
 
     std::string name;
     bool valid = true;
-
-    // queue-like methods.
-    void push(Take::pointer_t take);
     
 private:
-    std::queue<Take::pointer_t> m_queue;
+    std::deque<Take::pointer_t> m_queue;
 };
 
 #endif // ATTENDEE_H
