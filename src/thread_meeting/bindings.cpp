@@ -4,6 +4,7 @@
 #include "functions.h"
 #include "keep.h"
 #include "take.h"
+#include "take_queue.h"
 
 //#include "attendee_scope.h"
 //#include "baton_scope.h"
@@ -30,6 +31,7 @@ PYBIND11_MODULE(thread_meeting, m) {
     EnterExit::bind(m);
     Keep::bind(m);
     Take::bind(m);
+    TakeQueue::bind(m);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;

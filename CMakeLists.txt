@@ -29,6 +29,8 @@ set(SOURCES
     "${SOURCE_DIR}/keep.h"
     "${SOURCE_DIR}/take.cpp"
     "${SOURCE_DIR}/take.h"
+    "${SOURCE_DIR}/take_queue.cpp"
+    "${SOURCE_DIR}/take_queue.h"
     )
 
 
