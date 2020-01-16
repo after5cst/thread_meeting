@@ -19,6 +19,8 @@ public:
     std::string name;
     bool valid = true;
 
+    // queue-like methods.
+    void push(Take::pointer_t take);
     
 private:
     std::queue<Take::pointer_t> m_queue;

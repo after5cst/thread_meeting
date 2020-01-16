@@ -7,7 +7,7 @@ class Take
 {
 public:
     enum class Status { pending, acknowledged, protested };
-    typedef std::unique_ptr<Take> pointer_t;
+    typedef std::shared_ptr<Take> pointer_t;
     typedef std::shared_ptr<Status> status_t;
 
     static void bind(pybind11::module&);

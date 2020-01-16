@@ -24,7 +24,7 @@ void Keep::bind(pybind11::module& m)
 
 Take::pointer_t Keep::create_take(std::string name)
 {
-    auto ptr = std::make_unique<Take>(name, payload);
+    auto ptr = std::make_shared<Take>(name, payload);
     auto insert_result = m_map.insert({name, ptr->status});
     if (!insert_result.second)
     {
