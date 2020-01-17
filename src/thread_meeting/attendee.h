@@ -6,6 +6,7 @@
 
 #include "baton_scope.h"
 #include "keep.h"
+#include "peekable_queue.h"
 #include "take.h"
 
 class Attendee : public std::enable_shared_from_this<Attendee>
@@ -18,9 +19,7 @@ public:
 
     std::string name;
     bool valid = true;
-    
-private:
-    std::deque<Take::pointer_t> m_queue;
+    PeekableQueue::pointer_t queue = std::make_shared<PeekableQueue>();
 };
 
 #endif // ATTENDEE_H

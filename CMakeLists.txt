@@ -27,10 +27,10 @@ set(SOURCES
     "${SOURCE_DIR}/globals.h"
     "${SOURCE_DIR}/keep.cpp"
     "${SOURCE_DIR}/keep.h"
+    "${SOURCE_DIR}/peekable_queue.cpp"
+    "${SOURCE_DIR}/peekable_queue.h"
     "${SOURCE_DIR}/take.cpp"
     "${SOURCE_DIR}/take.h"
-    "${SOURCE_DIR}/take_queue.cpp"
-    "${SOURCE_DIR}/take_queue.h"
     )
 
 
