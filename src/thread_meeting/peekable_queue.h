@@ -9,7 +9,7 @@
 class PeekableQueue
 {
 public:
-    typedef std::unique_ptr<PeekableQueue> pointer_t;
+    typedef std::shared_ptr<PeekableQueue> pointer_t;
     static void bind(pybind11::module&);
 
     PeekableQueue() = default;

@@ -13,6 +13,10 @@ void Attendee::bind(pybind11::module& m)
             })
             .def_readonly("name", &Attendee::name)
             .def_readonly("valid", &Attendee::valid)
+            .def_property_readonly("queue",
+                [](const Attendee &a) {
+                return pybind11::cast(a.queue);
+                })
             .def("request_baton", &Attendee::request_baton)
             ;
 }

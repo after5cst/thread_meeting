@@ -125,6 +125,17 @@ class AttendeeTest(unittest.TestCase):
         me = thread_meeting.me()
         self.assertIsNone(me)
 
+    def test_attendee_can_use_queue(self):
+        with thread_meeting.participate("Bilbo"):
+            # could have also use ... `as me` in the with statement.
+            queue = thread_meeting.me().queue
+            self.assertFalse(queue)
+            queue.append(1)
+            self.assertTrue(queue)
+            self.assertEqual(queue.head, 1)
+            self.assertEqual(queue.get(), 1)
+            self.assertFalse(queue)
+
 
 if __name__ == '__main__':
     unittest.main()
