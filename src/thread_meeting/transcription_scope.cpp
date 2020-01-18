@@ -21,7 +21,7 @@ TranscriptionScope::pointer_t TranscriptionScope::set_target()
     // Normally, you should use the global function transcribe() to add 
     // transcription items.  But in this special case, we only want to 
     // transcribe the fact that the transcript has started to the 
-    // transcript it is relevant for.
+    // transcript that started (the others don't care).
     auto item = pybind11::cast(TranscriptionItem("Transcript started", 
         TranscriptionType::enter));
 
@@ -39,5 +39,6 @@ void TranscriptionScope::clear_target(pointer_t& target)
             TranscriptionType::exit));
         target->append(item);
         g_transcripts.erase(thread_id());
+        target.reset();
     }
 }
