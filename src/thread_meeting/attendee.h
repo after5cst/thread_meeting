@@ -12,14 +12,18 @@
 class Attendee : public std::enable_shared_from_this<Attendee>
 {
 public:
+
     typedef std::shared_ptr<Attendee> pointer_t;
     static void bind(pybind11::module&);
 
     std::unique_ptr<EnterExit> request_baton();
+    ThreadState current_state() const;
 
     std::string name;
     bool valid = true;
     PeekableQueue::pointer_t queue = std::make_shared<PeekableQueue>();
+private:
+    mutable ThreadState m_last_state = ThreadState::unknown;
 };
 
 #endif // ATTENDEE_H

@@ -40,7 +40,7 @@ public:
         return pybind11::none();
     }
 protected:
-    EnterExitImpl() : m_python_thread_id(get_python_thread_id()) {}
+    EnterExitImpl() : m_python_thread_id(PyThread_get_thread_ident()) {}
     virtual pointer_t set_target()
     {
         return std::make_shared<T>();
@@ -49,9 +49,9 @@ protected:
     {
         target.reset();
     }
-    long thread_id() const { return m_python_thread_id; }
+    thread_id_t thread_id() const { return m_python_thread_id; }
 private:
-    long m_python_thread_id = 0;
+    thread_id_t m_python_thread_id = 0;
     pointer_t m_target;
 };
 

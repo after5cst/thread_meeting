@@ -41,7 +41,7 @@ pybind11::list Keep::acknowledged() const
     auto result = pybind11::list();
     for (const auto& item : m_map)
     {
-        if (Take::Status::acknowledged == *item.second)
+        if (MessageStatus::acknowledged == *item.second)
             result.append(pybind11::str(item.first));
     }
     return result;
@@ -52,7 +52,7 @@ pybind11::list Keep::pending() const
     auto result = pybind11::list();
     for (const auto& item : m_map)
     {
-        if (Take::Status::pending == *item.second)
+        if (MessageStatus::pending == *item.second)
             result.append(pybind11::str(item.first));
     }
     return result;
@@ -63,7 +63,7 @@ pybind11::list Keep::protested() const
     auto result = pybind11::list();
     for (const auto& item : m_map)
     {
-        if (Take::Status::protested == *item.second)
+        if (MessageStatus::protested == *item.second)
             result.append(pybind11::str(item.first));
     }
     return result;

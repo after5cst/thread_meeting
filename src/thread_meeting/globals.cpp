@@ -5,20 +5,12 @@
 
 attendees_t g_attendees;
 std::weak_ptr< Baton > g_baton;
+std::shared_ptr<PeekableQueue> g_transcription;
+thread_id_t g_initial_thread_id = 0;
 
-long get_python_thread_id()
+bool verify_python_thread_id(thread_id_t expected_id, bool throw_if_not)
 {
-    auto state = PyGILState_GetThisThreadState();
-    if (NULL == state)
-    {
-        throw std::runtime_error("Python thread state not found");
-    }
-    return state->thread_id;
-}
-
-bool verify_python_thread_id(long expected_id, bool throw_if_not)
-{
-    auto thread_id = get_python_thread_id();
+    auto thread_id = PyThread_get_thread_ident();
     auto verified = thread_id == expected_id;
     if (throw_if_not && (!verified))
     {
