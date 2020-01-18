@@ -9,10 +9,9 @@
 #include "peekable_queue.h"
 #include "take.h"
 
-class Attendee : public std::enable_shared_from_this<Attendee>
+class Attendee
 {
 public:
-
     typedef std::shared_ptr<Attendee> pointer_t;
     static void bind(pybind11::module&);
 

@@ -1,7 +1,6 @@
 #include "attendee_scope.h"
 #include "attendee.h"
 
-#include <sstream>
 
 AttendeeScope::pointer_t AttendeeScope::set_target()
 {
@@ -20,9 +19,7 @@ AttendeeScope::pointer_t AttendeeScope::set_target()
     target->name = m_name;
     attendee = target;
 
-    std::stringstream sstr;
-    sstr << "Attendee '" << m_name << "' entered meeting";
-    transcribe(sstr.str(), TranscriptionType::enter);
+    transcribe(m_name, TranscriptionType::enter);
     return target;
 }
 
@@ -30,9 +27,7 @@ void AttendeeScope::clear_target(pointer_t& target)
 {
     if (target)
     {
-        std::stringstream sstr;
-        sstr << "Attendee '" << m_name << "' left meeting";
-        transcribe(sstr.str(), TranscriptionType::exit);
+        transcribe(m_name, TranscriptionType::exit);
 
         g_attendees.erase(thread_id());
         target->valid = false;

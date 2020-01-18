@@ -11,8 +11,6 @@ class PeekableQueue
 public:
     typedef std::shared_ptr<PeekableQueue> pointer_t;
     static void bind(pybind11::module&);
-
-    PeekableQueue() = default;
     
     void append(pybind11::object obj);
     bool empty() const { return m_queue.empty(); }

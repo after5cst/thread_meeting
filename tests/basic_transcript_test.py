@@ -70,6 +70,21 @@ class BasicTranscriptionTest(unittest.TestCase):
             )
         self.verify_transcription_items(transcriber, *expected)
 
+    def test_transcribe_sees_baton_enter_exit(self):
+        with thread_meeting.transcriber() as transcriber:
+            with thread_meeting.participate("Bilbo") as bilbo:
+                with bilbo.request_baton():
+                    pass
+        expected = (
+            TI('Transcript started', TT.Enter),
+            TI('Bilbo', TT.Enter),
+            TI('Baton', TT.Enter),
+            TI('Baton', TT.Exit),
+            TI('Bilbo', TT.Exit),
+            TI('Transcript ended', TT.Exit)
+            )
+        self.verify_transcription_items(transcriber, *expected)
+
 
 if __name__ == '__main__':
     unittest.main()
