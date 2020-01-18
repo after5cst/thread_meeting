@@ -1,6 +1,7 @@
 #include "transcription_scope.h"
 
 #include "globals.h"
+#include "transcription_item.h"
 
 TranscriptionScope::pointer_t TranscriptionScope::set_target()
 {
@@ -17,7 +18,15 @@ TranscriptionScope::pointer_t TranscriptionScope::set_target()
     auto target = std::make_shared<PeekableQueue>();
     transcript = target;
 
-    transcribe("Transcription started", TranscriptionType::enter);
+    // Normally, you should use the global function transcribe() to add 
+    // transcription items.  But in this special case, we only want to 
+    // transcribe the fact that the transcript has started to the 
+    // transcript it is relevant for.
+    auto item = pybind11::cast(TranscriptionItem("Transcript started", 
+        TranscriptionType::enter));
+
+    transcript->append(item);
+
     return target;
 }
 
@@ -25,7 +34,10 @@ void TranscriptionScope::clear_target(pointer_t& target)
 {
     if (target)
     {
-        transcribe("Transcription ended", TranscriptionType::exit);
+        // See set_target() for explanation why transcribe() is not used.
+        auto item = pybind11::cast(TranscriptionItem("Transcript ended", 
+            TranscriptionType::exit));
+        target->append(item);
         g_transcripts.erase(thread_id());
     }
 }
