@@ -5,7 +5,7 @@
 #include "keep.h"
 #include "take.h"
 #include "peekable_queue.h"
-#include "transcription_item.h"
+#include "transcript_item.h"
 
 //#include "attendee_scope.h"
 //#include "baton_scope.h"
@@ -32,7 +32,7 @@ PYBIND11_MODULE(thread_meeting, m) {
     EnterExit::bind(m);
     Keep::bind(m);
     Take::bind(m);
-    TranscriptionItem::bind(m);
+    TranscriptItem::bind(m);
     PeekableQueue::bind(m);
 
     // If the initial thread ID (presumably main) hasn't been set,

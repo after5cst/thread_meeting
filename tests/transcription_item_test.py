@@ -1,21 +1,21 @@
 from datetime import datetime
 import unittest
 
-from thread_meeting import TranscriptionType as TT
-from thread_meeting import TranscriptionItem
+from thread_meeting import TranscriptType as TT
+from thread_meeting import TranscriptItem
 
 
-class TranscriptionItemTest(unittest.TestCase):
+class TranscriptItemTest(unittest.TestCase):
     
-    def test_transcription_item_requires_message(self):
+    def test_transcript_item_requires_message(self):
         with self.assertRaises(ValueError) as context:
-            item = TranscriptionItem()
+            item = TranscriptItem()
         self.assertTrue("Message may not be empty"
             in str(context.exception), str(context.exception))
 
-    def test_transcription_item_sets_defaults(self):
+    def test_transcript_item_sets_defaults(self):
         before = datetime.now()
-        item = TranscriptionItem('hi')
+        item = TranscriptItem('hi')
         after = datetime.now()
         self.assertEqual(item.message, 'hi')
         self.assertEqual(item.message_type, TT.Custom)
@@ -24,13 +24,13 @@ class TranscriptionItemTest(unittest.TestCase):
         self.assertGreaterEqual(item.timestamp, before)
         self.assertLessEqual(item.timestamp, after)
 
-    def test_transcription_item_can_init_type(self):
-        item = TranscriptionItem('message', TT.Ack)
+    def test_transcript_item_can_init_type(self):
+        item = TranscriptItem('message', TT.Ack)
         self.assertEqual(item.message_type, TT.Ack)
 
-    def test_transcription_item_cannot_change_values(self):
-        item = TranscriptionItem('message')
-        item = TranscriptionItem('hi')
+    def test_transcript_item_cannot_change_values(self):
+        item = TranscriptItem('message')
+        item = TranscriptItem('hi')
 
         with self.assertRaises(AttributeError) as context:
             item.source = 'text'
@@ -52,7 +52,7 @@ class TranscriptionItemTest(unittest.TestCase):
         self.assertTrue("can't set attribute"
             in str(context.exception), str(context.exception))
 
-    def test_transcription_item_(self):
+    def test_transcript_item_(self):
         pass
 
 if __name__ == '__main__':

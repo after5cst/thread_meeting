@@ -2,13 +2,13 @@ import unittest
 
 import thread_meeting
 from thread_meeting import transcribe
-from thread_meeting import TranscriptionType as TT
-from thread_meeting import TranscriptionItem as TI
+from thread_meeting import TranscriptType as TT
+from thread_meeting import TranscriptItem as TI
 
 
-class BasicTranscriptionTest(unittest.TestCase):
+class BasicTranscriptTest(unittest.TestCase):
 
-    def verify_transcription_items(self, transcriber, *args):
+    def verify_transcript_items(self, transcriber, *args):
         for arg in args:
             self.assertIsInstance(arg, TI)
             item = transcriber.get()
@@ -17,6 +17,7 @@ class BasicTranscriptionTest(unittest.TestCase):
             self.assertTrue(arg.message in item.message,
                 "'{}' not in '{}'".format(arg.message, item.message)
                 )
+            self.assertEqual(arg.message, item.message)
         if transcriber:
             self.assertFalse(bool(transcriber), "Unexpected item '{}:{}'".format(
                 transcriber.head.message_type, transcriber.head.message
@@ -28,7 +29,7 @@ class BasicTranscriptionTest(unittest.TestCase):
         self.assertTrue("incompatible function arguments"
             in str(context.exception), str(context.exception))
 
-    def test_transcribe_requires_valid_transcription_type(self):
+    def test_transcribe_requires_valid_transcript_type(self):
         with self.assertRaises(TypeError) as context:
             transcribe("Hello", 1)
         self.assertTrue("incompatible function arguments"
@@ -48,11 +49,11 @@ class BasicTranscriptionTest(unittest.TestCase):
             item = transcribe(message)
             self.assertEqual(item.message, message)
         expected = (
-            TI('Transcript started', TT.Enter),
+            TI('Transcript', TT.Enter),
             TI(message, TT.Custom),
-            TI('Transcript ended', TT.Exit)
+            TI('Transcript', TT.Exit)
             )
-        self.verify_transcription_items(transcriber, *expected)
+        self.verify_transcript_items(transcriber, *expected)
 
     def test_transcribe_sees_attendee_enter_exit(self):
         with thread_meeting.transcriber() as transcriber:
@@ -61,14 +62,14 @@ class BasicTranscriptionTest(unittest.TestCase):
             with thread_meeting.participate("Baggins"):
                 pass
         expected = (
-            TI('Transcript started', TT.Enter),
+            TI('Transcript', TT.Enter),
             TI('Bilbo', TT.Enter),
             TI('Bilbo', TT.Exit),
             TI('Baggins', TT.Enter),
             TI('Baggins', TT.Exit),
-            TI('Transcript ended', TT.Exit)
+            TI('Transcript', TT.Exit)
             )
-        self.verify_transcription_items(transcriber, *expected)
+        self.verify_transcript_items(transcriber, *expected)
 
     def test_transcribe_sees_baton_enter_exit(self):
         with thread_meeting.transcriber() as transcriber:
@@ -76,14 +77,32 @@ class BasicTranscriptionTest(unittest.TestCase):
                 with bilbo.request_baton():
                     pass
         expected = (
-            TI('Transcript started', TT.Enter),
+            TI('Transcript', TT.Enter),
             TI('Bilbo', TT.Enter),
             TI('Baton', TT.Enter),
             TI('Baton', TT.Exit),
             TI('Bilbo', TT.Exit),
-            TI('Transcript ended', TT.Exit)
+            TI('Transcript', TT.Exit)
             )
-        self.verify_transcription_items(transcriber, *expected)
+        self.verify_transcript_items(transcriber, *expected)
+
+    def test_transcribe_sees_baton_enter_exit_with_exception(self):
+        with thread_meeting.transcriber() as transcriber:
+            with self.assertRaises(RuntimeError) as context:
+                with thread_meeting.participate("Bilbo") as bilbo:
+                    with bilbo.request_baton():
+                        raise RuntimeError('this error is expected')
+            self.assertTrue("this error is expected"
+                in str(context.exception), str(context.exception))
+        expected = (
+            TI('Transcript', TT.Enter),
+            TI('Bilbo', TT.Enter),
+            TI('Baton', TT.Enter),
+            TI('Baton', TT.Exit),
+            TI('Bilbo', TT.Exit),
+            TI('Transcript', TT.Exit)
+            )
+        self.verify_transcript_items(transcriber, *expected)
 
 
 if __name__ == '__main__':

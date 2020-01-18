@@ -1,9 +1,9 @@
-#include "transcription_scope.h"
+#include "transcript_scope.h"
 
 #include "globals.h"
-#include "transcription_item.h"
+#include "transcript_item.h"
 
-TranscriptionScope::pointer_t TranscriptionScope::set_target()
+TranscriptScope::pointer_t TranscriptScope::set_target()
 {
 
     auto &transcript = g_transcripts[thread_id()];
@@ -19,24 +19,24 @@ TranscriptionScope::pointer_t TranscriptionScope::set_target()
     transcript = target;
 
     // Normally, you should use the global function transcribe() to add 
-    // transcription items.  But in this special case, we only want to 
+    // transcript items.  But in this special case, we only want to 
     // transcribe the fact that the transcript has started to the 
     // transcript that started (the others don't care).
-    auto item = pybind11::cast(TranscriptionItem("Transcript started", 
-        TranscriptionType::enter));
+    auto item = pybind11::cast(TranscriptItem("Transcript", 
+        TranscriptType::enter));
 
     transcript->append(item);
 
     return target;
 }
 
-void TranscriptionScope::clear_target(pointer_t& target)
+void TranscriptScope::clear_target(pointer_t& target)
 {
     if (target)
     {
         // See set_target() for explanation why transcribe() is not used.
-        auto item = pybind11::cast(TranscriptionItem("Transcript ended", 
-            TranscriptionType::exit));
+        auto item = pybind11::cast(TranscriptItem("Transcript", 
+            TranscriptType::exit));
         target->append(item);
         g_transcripts.erase(thread_id());
         target.reset();

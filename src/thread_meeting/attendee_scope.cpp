@@ -19,7 +19,7 @@ AttendeeScope::pointer_t AttendeeScope::set_target()
     target->name = m_name;
     attendee = target;
 
-    transcribe(m_name, TranscriptionType::enter);
+    transcribe(m_name, TranscriptType::enter);
     return target;
 }
 
@@ -27,7 +27,7 @@ void AttendeeScope::clear_target(pointer_t& target)
 {
     if (target)
     {
-        transcribe(m_name, TranscriptionType::exit);
+        transcribe(m_name, TranscriptType::exit);
 
         g_attendees.erase(thread_id());
         target->valid = false;

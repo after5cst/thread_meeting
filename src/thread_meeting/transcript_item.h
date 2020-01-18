@@ -6,18 +6,18 @@
 
 #include <memory>
 
-class TranscriptionItem
+class TranscriptItem
 {
 public:
-    typedef std::unique_ptr<TranscriptionItem> pointer_t;
+    typedef std::unique_ptr<TranscriptItem> pointer_t;
     static void bind(pybind11::module& m);
 
-    TranscriptionItem(std::string message_in,
-                      TranscriptionType transcription_type);
+    TranscriptItem(std::string message_in,
+                      TranscriptType transcript_type);
 
     std::string source;
     std::string message;
-    TranscriptionType message_type;
+    TranscriptType message_type;
     pybind11::object timestamp;
 private:
 };

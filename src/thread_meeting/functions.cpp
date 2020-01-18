@@ -1,12 +1,12 @@
 #include "functions.h"
 #include "attendee_scope.h"
-#include "transcription_item.h"
-#include "transcription_scope.h"
+#include "transcript_item.h"
+#include "transcript_scope.h"
 #include "globals.h"
 
 std::unique_ptr< EnterExit > transcriber()
 {
-    return std::make_unique< TranscriptionScope >();
+    return std::make_unique< TranscriptScope >();
 }
 
 std::unique_ptr< EnterExit > participate(std::string attendee_name)
@@ -28,13 +28,13 @@ pybind11::object me()
 
 
 pybind11::object transcribe(std::string message,
-                            TranscriptionType transcription_type)
+                            TranscriptType transcript_type)
 {
     if (0 == g_transcripts.size())
     {
         return pybind11::none();
     }
-    auto item = pybind11::cast(TranscriptionItem(message, transcription_type));
+    auto item = pybind11::cast(TranscriptItem(message, transcript_type));
 
     for (auto& transcript : g_transcripts)
     {
@@ -59,22 +59,22 @@ void bind_functions(pybind11::module& m)
             .value("Presenter", ThreadState::presenter)
             ;
 
-    pybind11::enum_<TranscriptionType>(m, "TranscriptionType", pybind11::arithmetic())
-            .value("Ack", TranscriptionType::ack)
-            .value("Custom", TranscriptionType::custom)
-            .value("Enter", TranscriptionType::enter)
-            .value("Exit", TranscriptionType::exit)
-            .value("Nack", TranscriptionType::nack)
-            .value("Recv", TranscriptionType::recv)
-            .value("Send", TranscriptionType::send)
-            .value("State", TranscriptionType::state)
+    pybind11::enum_<TranscriptType>(m, "TranscriptType", pybind11::arithmetic())
+            .value("Ack", TranscriptType::ack)
+            .value("Custom", TranscriptType::custom)
+            .value("Enter", TranscriptType::enter)
+            .value("Exit", TranscriptType::exit)
+            .value("Nack", TranscriptType::nack)
+            .value("Recv", TranscriptType::recv)
+            .value("Send", TranscriptType::send)
+            .value("State", TranscriptType::state)
             ;
 
     m.def("participate", &participate, pybind11::arg("attendee_name") = "");
     m.def("me", &me);
     m.def("transcribe", &transcribe,
           pybind11::arg("message"),
-          pybind11::arg("transcription_type") = TranscriptionType::custom
+          pybind11::arg("transcript_type") = TranscriptType::custom
           );
    m.def("transcriber", &transcriber);
 }

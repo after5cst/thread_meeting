@@ -3,7 +3,7 @@
 #include "peekable_queue.h"
 #include "enter_exit.h"
 
-class TranscriptionScope : public EnterExitImpl<PeekableQueue>
+class TranscriptScope : public EnterExitImpl<PeekableQueue>
 {
     typedef EnterExitImpl<PeekableQueue> baseclass;
 public:

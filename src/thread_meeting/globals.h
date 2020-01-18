@@ -19,7 +19,7 @@ class PeekableQueue;
 enum class ThreadState {
     unknown, idle, working, busy, presenter
 };
-enum class TranscriptionType {
+enum class TranscriptType {
     ack, custom, enter, exit, nack, recv, send, state
 };
 enum class MessageStatus {
@@ -37,7 +37,7 @@ extern transcripts_t g_transcripts;
 std::string verify_thread_name(std::string suggested_name = std::string());
 bool verify_python_thread_id(thread_id_t expected_id, bool throw_if_not=true);
 pybind11::object transcribe(std::string message,
-                            TranscriptionType transcription_type);
+                            TranscriptType transcript_type);
 
 
 #endif // _GLOBALS_H

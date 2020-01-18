@@ -31,10 +31,10 @@ set(SOURCES
     "${SOURCE_DIR}/peekable_queue.h"
     "${SOURCE_DIR}/take.cpp"
     "${SOURCE_DIR}/take.h"
-    "${SOURCE_DIR}/transcription_item.cpp"
-    "${SOURCE_DIR}/transcription_item.h"
-    "${SOURCE_DIR}/transcription_scope.cpp"
-    "${SOURCE_DIR}/transcription_scope.h"
+    "${SOURCE_DIR}/transcript_item.cpp"
+    "${SOURCE_DIR}/transcript_item.h"
+    "${SOURCE_DIR}/transcript_scope.cpp"
+    "${SOURCE_DIR}/transcript_scope.h"
     )
 
 

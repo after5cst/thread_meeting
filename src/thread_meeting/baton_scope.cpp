@@ -13,7 +13,7 @@ BatonScope::pointer_t BatonScope::set_target()
     auto target = std::make_shared<Baton>();
     g_baton = target;
 
-    transcribe("Baton", TranscriptionType::enter);
+    transcribe("Baton", TranscriptType::enter);
 
     return target;
 }
@@ -22,7 +22,7 @@ void BatonScope::clear_target(pointer_t& target)
 {
     if (target)
     {
-        transcribe("Baton", TranscriptionType::exit);
+        transcribe("Baton", TranscriptType::exit);
         g_baton.reset();
         target->invalidate();
         target.reset();
