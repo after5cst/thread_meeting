@@ -27,11 +27,12 @@ enum class MessageStatus {
 };
 
 typedef std::unordered_map< thread_id_t, std::weak_ptr<Attendee> > attendees_t;
+typedef std::unordered_map< thread_id_t, std::shared_ptr<PeekableQueue> > transcripts_t;
 
 extern attendees_t g_attendees;
 extern std::weak_ptr< Baton > g_baton;
-extern std::shared_ptr<PeekableQueue> g_transcription;
 extern thread_id_t g_initial_thread_id;
+extern transcripts_t g_transcripts;
 
 bool verify_python_thread_id(thread_id_t expected_id, bool throw_if_not=true);
 pybind11::object transcribe(std::string message,

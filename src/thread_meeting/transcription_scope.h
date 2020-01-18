@@ -7,8 +7,6 @@ class TranscriptionScope : public EnterExitImpl<PeekableQueue>
 {
     typedef EnterExitImpl<PeekableQueue> baseclass;
 public:
-    TranscriptionScope() : baseclass() {}
-
     virtual pointer_t set_target() override;
     virtual void clear_target(pointer_t& target) override;
 };

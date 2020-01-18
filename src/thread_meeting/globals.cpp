@@ -5,8 +5,8 @@
 
 attendees_t g_attendees;
 std::weak_ptr< Baton > g_baton;
-std::shared_ptr<PeekableQueue> g_transcription;
 thread_id_t g_initial_thread_id = 0;
+transcripts_t g_transcripts;
 
 bool verify_python_thread_id(thread_id_t expected_id, bool throw_if_not)
 {

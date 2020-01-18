@@ -33,14 +33,17 @@ pybind11::object me()
 pybind11::object transcribe(std::string message,
                             TranscriptionType transcription_type)
 {
-    if (g_transcription)
+    if (0 == g_transcripts.size())
     {
-        auto item = pybind11::cast(
-                    TranscriptionItem(message, transcription_type));
-        g_transcription->append(item);
-        return item;
+        return pybind11::none();
     }
-    return pybind11::none();
+    auto item = pybind11::cast(TranscriptionItem(message, transcription_type));
+
+    for (auto& transcript : g_transcripts)
+    {
+        transcript.second->append(item);
+    }
+    return item;
 }
 
 void bind_functions(pybind11::module& m)

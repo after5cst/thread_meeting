@@ -32,9 +32,17 @@ class BasicTranscriptionTest(unittest.TestCase):
         with thread_meeting.transcriber() as transcriber:
             item = transcribe(message)
             self.assertEqual(item.message, message)
+        # The first item in the transcript is the start message
+        # automatically created by the transcriber.  Throw it out.
+        self.assertEqual(transcriber.get().message_type, TT.Enter)
+
         # See that the item was added to the transcriber
         self.assertEqual(transcriber.get(), item)
-        # And that 'get' removed it, and there are no more
+
+        # The next item in the transcript is the end message
+        # automatically created by the transcriber.  Throw it out.
+        self.assertEqual(transcriber.get().message_type, TT.Exit)
+        # There should be no more messages!
         self.assertFalse(transcriber)
 
 

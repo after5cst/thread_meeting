@@ -1,15 +1,23 @@
 #include "transcription_scope.h"
+
 #include "globals.h"
 
 TranscriptionScope::pointer_t TranscriptionScope::set_target()
 {
-    if (g_transcription)
+
+    auto &transcript = g_transcripts[thread_id()];
+    if (transcript)
     {
-        // Someone else is already transcribing.  We can't get it.
+        // This thread already has a transcript.  Since I define a transcript
+        // as global to the thread, an attempt to create a second one will
+        // fail.  By design, although this could be up for review.
         return nullptr;
     }
+
     auto target = std::make_shared<PeekableQueue>();
-    g_transcription = target;
+    transcript = target;
+
+    transcribe("Transcription started", TranscriptionType::enter);
     return target;
 }
 
@@ -17,6 +25,7 @@ void TranscriptionScope::clear_target(pointer_t& target)
 {
     if (target)
     {
-        g_transcription.reset();
+        transcribe("Transcription ended", TranscriptionType::exit);
+        g_transcripts.erase(thread_id());
     }
 }
