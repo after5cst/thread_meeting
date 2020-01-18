@@ -3,58 +3,39 @@
 
 #include <sstream>
 
-bool AttendeeScope::name_conflicts(const std::string& name) const
-{
-    for (const auto info: g_attendees)
-    {
-        if (auto ptr = info.second.lock())
-        {
-            if (name == ptr->name)
-            {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-
 AttendeeScope::pointer_t AttendeeScope::set_target()
 {
-    if (auto ptr = g_attendees[thread_id()].lock())
+    // Ensure the name is unique.
+    m_name = verify_thread_name(m_name);
+
+    auto& attendee = g_attendees[thread_id()];
+
+    if (attendee)
     {
-        auto msg =  "Attendee '" +  ptr->name + "' already present";
+        auto msg =  "Attendee '" +  attendee->name + "' already present";
         throw std::runtime_error(msg);
     }
 
-    if (0 == m_name.size())
-    {
-        std::stringstream sstr;
-        sstr << "Thread " << thread_id();
-        m_name = sstr.str();
-        if (name_conflicts(m_name))
-        {
-            m_name = "Unknown";
-        }
-    }
-
-    auto name = m_name;
-    for (auto i = 0; name_conflicts(name); ++i)
-    {
-        std::stringstream sstr;
-        sstr << m_name << " " << i;
-        name = sstr.str();
-    }
-
     auto target = std::make_shared<Attendee>();
-    target->name = name;
-    g_attendees[thread_id()] = target;
+    target->name = m_name;
+    attendee = target;
+
+    std::stringstream sstr;
+    sstr << "Attendee '" << m_name << "' entered meeting";
+    transcribe(sstr.str(), TranscriptionType::enter);
     return target;
 }
 
 void AttendeeScope::clear_target(pointer_t& target)
 {
-    g_attendees.erase(thread_id());
-    target->valid = false;
-    target.reset();
+    if (target)
+    {
+        std::stringstream sstr;
+        sstr << "Attendee '" << m_name << "' left meeting";
+        transcribe(sstr.str(), TranscriptionType::exit);
+
+        g_attendees.erase(thread_id());
+        target->valid = false;
+        target.reset();
+    }
 }

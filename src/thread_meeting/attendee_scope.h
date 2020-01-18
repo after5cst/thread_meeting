@@ -11,6 +11,4 @@ public:
     virtual void clear_target(pointer_t& target) override;
 
     std::string m_name;
-private:
-    bool name_conflicts(const std::string& name) const;
 };

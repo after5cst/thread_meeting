@@ -23,19 +23,19 @@ class AttendeeTest(unittest.TestCase):
 
     def test_attendee_name_will_default(self):
         with thread_meeting.participate() as attendee:
-            self.assertTrue(attendee.name.startswith("Thread"))
+            self.assertEqual("(primary)", attendee.name)
 
     def test_attendee_can_leave_and_come_back(self):
         with thread_meeting.participate() as one:
-            self.assertTrue(one.name.startswith("Thread"))
+            self.assertEqual("(primary)", one.name)
         with thread_meeting.participate() as two:
-            self.assertTrue(two.name.startswith("Thread"))
+            self.assertEqual("(primary)", two.name)
 
     def test_cannot_recursively_use_context_manager(self):
         with thread_meeting.participate() as one:
-            self.assertTrue(one.name.startswith("Thread"))
+            self.assertEqual("(primary)", one.name)
             with self.assertRaises(RuntimeError) as context:
-                with thread_meeting.participate() as two:
+                with thread_meeting.participate():
                     pass
             self.assertTrue("' already present"
                 in str(context.exception), str(context.exception))

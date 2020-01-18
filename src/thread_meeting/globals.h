@@ -26,7 +26,7 @@ enum class MessageStatus {
     pending, acknowledged, protested
 };
 
-typedef std::unordered_map< thread_id_t, std::weak_ptr<Attendee> > attendees_t;
+typedef std::unordered_map< thread_id_t, std::shared_ptr<Attendee> > attendees_t;
 typedef std::unordered_map< thread_id_t, std::shared_ptr<PeekableQueue> > transcripts_t;
 
 extern attendees_t g_attendees;
@@ -34,6 +34,7 @@ extern std::weak_ptr< Baton > g_baton;
 extern thread_id_t g_initial_thread_id;
 extern transcripts_t g_transcripts;
 
+std::string verify_thread_name(std::string suggested_name);
 bool verify_python_thread_id(thread_id_t expected_id, bool throw_if_not=true);
 pybind11::object transcribe(std::string message,
                             TranscriptionType transcription_type);

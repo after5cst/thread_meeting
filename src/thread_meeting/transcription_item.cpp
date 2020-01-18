@@ -34,32 +34,5 @@ TranscriptionItem::TranscriptionItem(std::string message_in,
         throw std::invalid_argument("Message may not be empty.");
     }
 
-    auto id = PyThread_get_thread_ident();
-    auto iter = g_attendees.find(id);
-    Attendee::pointer_t ptr;
-    if (iter != g_attendees.end())
-    {
-        ptr = iter->second.lock();
-    }
-
-    if (ptr)
-    {
-        source = ptr->name;
-    }
-    else if (id == g_initial_thread_id)
-    {
-        // Not registered, but it is the first thread to load this
-        // module.  I don't want to call it 'main' (because it might
-        // not be the main thread), but I will call it 'primary'
-        // assuming that the primary thread loads this module first.
-        source = "(primary)";
-    }
-    else
-    {
-        // This thread isn't registered.  Just use (Python thread ID)
-        // for the source name.
-        std::stringstream sstr;
-        sstr << "(" << id << ")";
-        source = std::move(sstr.str());
-    }
+    source = verify_thread_name(std::string());
 }

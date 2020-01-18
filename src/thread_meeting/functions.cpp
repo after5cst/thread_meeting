@@ -21,10 +21,7 @@ pybind11::object me()
     auto iter = g_attendees.find(id);
     if (iter != g_attendees.end())
     {
-        if (auto ptr = iter->second.lock())
-        {
-            result = pybind11::cast(ptr);
-        }
+        result = pybind11::cast(iter->second);
     }
     return result;
 }
