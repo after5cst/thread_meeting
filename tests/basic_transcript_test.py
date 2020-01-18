@@ -3,9 +3,24 @@ import unittest
 import thread_meeting
 from thread_meeting import transcribe
 from thread_meeting import TranscriptionType as TT
+from thread_meeting import TranscriptionItem as TI
 
 
 class BasicTranscriptionTest(unittest.TestCase):
+
+    def verify_transcription_items(self, transcriber, *args):
+        for arg in args:
+            self.assertIsInstance(arg, TI)
+            item = transcriber.get()
+            self.assertIsInstance(item, TI)
+            self.assertEqual(arg.message_type, item.message_type)
+            self.assertTrue(arg.message in item.message,
+                "'{}' not in '{}'".format(arg.message, item.message)
+                )
+        if transcriber:
+            self.assertFalse(bool(transcriber), "Unexpected item '{}:{}'".format(
+                transcriber.head.message_type, transcriber.head.message
+                ))
     
     def test_transcribe_requires_message(self):
         with self.assertRaises(TypeError) as context:
@@ -20,7 +35,7 @@ class BasicTranscriptionTest(unittest.TestCase):
             in str(context.exception), str(context.exception))
 
     def test_transcribe_can_succeed(self):
-        item = transcribe("Hello")
+        transcribe("Hello")
 
     def test_transcribe_returns_none_without_transcriber(self):
         message = "Message will be dropped"
@@ -32,18 +47,28 @@ class BasicTranscriptionTest(unittest.TestCase):
         with thread_meeting.transcriber() as transcriber:
             item = transcribe(message)
             self.assertEqual(item.message, message)
-        # The first item in the transcript is the start message
-        # automatically created by the transcriber.  Throw it out.
-        self.assertEqual(transcriber.get().message_type, TT.Enter)
+        expected = (
+            TI('Transcript started', TT.Enter),
+            TI(message, TT.Custom),
+            TI('Transcript ended', TT.Exit)
+            )
+        self.verify_transcription_items(transcriber, *expected)
 
-        # See that the item was added to the transcriber
-        self.assertEqual(transcriber.get(), item)
-
-        # The next item in the transcript is the end message
-        # automatically created by the transcriber.  Throw it out.
-        self.assertEqual(transcriber.get().message_type, TT.Exit)
-        # There should be no more messages!
-        self.assertFalse(transcriber)
+    def test_transcribe_sees_attendee_enter_exit(self):
+        with thread_meeting.transcriber() as transcriber:
+            with thread_meeting.participate("Bilbo"):
+                pass
+            with thread_meeting.participate("Baggins"):
+                pass
+        expected = (
+            TI('Transcript started', TT.Enter),
+            TI('Bilbo', TT.Enter),
+            TI('Bilbo', TT.Exit),
+            TI('Baggins', TT.Enter),
+            TI('Baggins', TT.Exit),
+            TI('Transcript ended', TT.Exit)
+            )
+        self.verify_transcription_items(transcriber, *expected)
 
 
 if __name__ == '__main__':
