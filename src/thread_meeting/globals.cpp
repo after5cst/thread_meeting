@@ -23,6 +23,31 @@ std::string as_string(const MessageStatus& status)
     }
 }
 
+std::string as_string(const TranscriptType& trans_type)
+{
+    switch (trans_type)
+    {
+    case TranscriptType::ack:
+        return "Ack";
+    case TranscriptType::custom:
+        return "Custom";
+    case TranscriptType::enter:
+        return "Enter";
+    case TranscriptType::exit:
+        return "Exit";
+    case TranscriptType::nack:
+        return "Nack";
+    case TranscriptType::note:
+        return "Note";
+    case TranscriptType::post:
+        return "Post";
+    case TranscriptType::recv:
+        return "Recv";
+    case TranscriptType::state:
+        return "State";
+    }
+}
+
 
 bool verify_python_thread_id(thread_id_t expected_id, bool throw_if_not)
 {
@@ -42,9 +67,13 @@ bool verify_python_thread_id(thread_id_t expected_id, bool throw_if_not)
 }
 
 
-std::string verify_thread_name(std::string suggested_name)
+std::string verify_thread_name(std::string suggested_name,
+                               thread_id_t id)
 {
-    auto id = PyThread_get_thread_ident();
+    if (0 == id)
+    {
+        id = PyThread_get_thread_ident();
+    }
 
     // First pass: if the thread has an attendee with a name,
     // it *IS* the name, so just return it.

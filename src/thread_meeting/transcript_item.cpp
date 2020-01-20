@@ -14,9 +14,20 @@ void TranscriptItem::bind(pybind11::module& m)
              pybind11::arg("message_type") = TranscriptType::custom)
         .def("__repr__",
             [](const TranscriptItem &a) {
-                return "<thread_Meeting.TranscriptItem>";
+                std::stringstream sstr;
+                sstr << "< "
+                     << a.source
+                     << " --["
+                     << a.message
+                     << ","
+                     << as_string(a.message_type)
+                     << "]--> "
+                     << a.destination
+                     << " >";
+                return sstr.str();
             })
         .def_readonly("source", &TranscriptItem::source)
+        .def_readonly("destination", &TranscriptItem::source)
         .def_readonly("message", &TranscriptItem::message)
         .def_readonly("message_type", &TranscriptItem::message_type)
         .def_readonly("timestamp", &TranscriptItem::timestamp)
@@ -24,7 +35,8 @@ void TranscriptItem::bind(pybind11::module& m)
 }
 
 TranscriptItem::TranscriptItem(std::string message_in,
-                                     TranscriptType transcript_type)
+                               TranscriptType transcript_type,
+                               thread_id_t destination_id)
     : message(message_in),
       message_type(transcript_type),
       timestamp(pybind11::cast(std::chrono::system_clock::now()))
@@ -35,4 +47,5 @@ TranscriptItem::TranscriptItem(std::string message_in,
     }
 
     source = verify_thread_name(std::string());
+    destination = verify_thread_name(std::string(), destination_id);
 }

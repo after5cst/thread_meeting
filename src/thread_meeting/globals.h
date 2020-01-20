@@ -35,11 +35,14 @@ extern thread_id_t g_initial_thread_id;
 extern transcripts_t g_transcripts;
 
 std::string as_string(const MessageStatus& status);
+std::string as_string(const TranscriptType& status);
 
-std::string verify_thread_name(std::string suggested_name = std::string());
+std::string verify_thread_name(std::string suggested_name = std::string(),
+                               thread_id_t thread_id = 0);
 bool verify_python_thread_id(thread_id_t expected_id, bool throw_if_not=true);
 pybind11::object transcribe(std::string message,
-                            TranscriptType transcript_type);
+                            TranscriptType transcript_type,
+                            thread_id_t destination = 0);
 
 
 #endif // _GLOBALS_H

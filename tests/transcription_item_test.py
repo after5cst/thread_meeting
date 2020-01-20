@@ -21,6 +21,7 @@ class TranscriptItemTest(unittest.TestCase):
         self.assertEqual(item.message_type, TT.Custom)
         # This should be on the primary thread, so the name is set.
         self.assertEqual(item.source, '(primary)')
+        self.assertEqual(item.destination, '(primary)')
         self.assertGreaterEqual(item.timestamp, before)
         self.assertLessEqual(item.timestamp, after)
 
@@ -38,6 +39,11 @@ class TranscriptItemTest(unittest.TestCase):
             in str(context.exception), str(context.exception))
 
         with self.assertRaises(AttributeError) as context:
+            item.destination = 'text'
+        self.assertTrue("can't set attribute"
+            in str(context.exception), str(context.exception))
+
+        with self.assertRaises(AttributeError) as context:
             item.message = 'text'
         self.assertTrue("can't set attribute"
             in str(context.exception), str(context.exception))
@@ -51,9 +57,6 @@ class TranscriptItemTest(unittest.TestCase):
             item.timestamp = datetime.now()
         self.assertTrue("can't set attribute"
             in str(context.exception), str(context.exception))
-
-    def test_transcript_item_(self):
-        pass
 
 if __name__ == '__main__':
     unittest.main()

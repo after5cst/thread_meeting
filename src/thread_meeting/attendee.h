@@ -20,12 +20,15 @@ public:
     std::unique_ptr<Keep> note(
             std::string name, pybind11::object payload);
 
+    void add_to_queue(Take::pointer_t take);
+
     std::string name;
     bool valid = true;
     PeekableQueue::pointer_t queue = std::make_shared<PeekableQueue>(
         PeekableQueue::Options::disable_append);
 private:
     mutable ThreadState m_last_state = ThreadState::unknown;
+    const thread_id_t m_thread_id = PyThread_get_thread_ident();
 };
 
 #endif // ATTENDEE_H

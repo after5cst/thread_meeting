@@ -13,9 +13,11 @@ public:
     static void bind(pybind11::module& m);
 
     TranscriptItem(std::string message_in,
-                      TranscriptType transcript_type);
+                   TranscriptType transcript_type,
+                   thread_id_t destination_id = 0);
 
     std::string source;
+    std::string destination;
     std::string message;
     TranscriptType message_type;
     pybind11::object timestamp;

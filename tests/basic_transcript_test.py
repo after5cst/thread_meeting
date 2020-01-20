@@ -5,13 +5,20 @@ from thread_meeting import transcribe
 from thread_meeting import TranscriptType as TT
 from thread_meeting import TranscriptItem as TI
 
+dump = False
 
 class BasicTranscriptTest(unittest.TestCase):
+    
+    def setUp(this):
+        global dump
+        dump = False
 
     def verify_transcript_items(self, transcriber, *args):
         for arg in args:
             self.assertIsInstance(arg, TI)
             item = transcriber.get()
+            if dump:
+                print(item)
             self.assertIsInstance(item, TI)
             self.assertEqual(arg.message_type, item.message_type)
             self.assertTrue(arg.message in item.message,
@@ -46,7 +53,9 @@ class BasicTranscriptTest(unittest.TestCase):
     def test_transcribe_returns_item_with_transcriber(self):
         message = "Message will be returned"
         with thread_meeting.transcriber() as transcriber:
+            self.assertIsNotNone(transcriber)
             item = transcribe(message)
+            self.assertIsNotNone(item)
             self.assertEqual(item.message, message)
         expected = (
             TI('Transcript', TT.Enter),
