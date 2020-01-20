@@ -104,6 +104,27 @@ class BasicTranscriptTest(unittest.TestCase):
             )
         self.verify_transcript_items(transcriber, *expected)
 
+    def test_transcribe_sees_attendee_add_to_queue(self):
+        with thread_meeting.transcriber() as transcriber:    # ENTER Transcript
+            with thread_meeting.participate("Bilbo") as me:  # ENTER Bilbo
+                me.note("Ring", "The One Ring")              # NOTE Ring
+                me.note("Sword", "Sting")                    # NOTE Sword
+                me.queue.get().protest()                     # NACK Ring
+                # exit with scope here                       # EXIT Bilbo
+            me.queue.get()                                   # ACK sword
+            # exit with scope here                           # EXIT Transcript
+        expected = (
+            TI('Transcript', TT.Enter),
+            TI('Bilbo', TT.Enter),
+            TI('Ring', TT.Note),
+            TI('Sword', TT.Note),
+            TI('Ring', TT.Nack),
+            TI('Bilbo', TT.Exit),
+            TI('Sword', TT.Ack),
+            TI('Transcript', TT.Exit)
+            )
+        self.verify_transcript_items(transcriber, *expected)
+
 
 if __name__ == '__main__':
     unittest.main()

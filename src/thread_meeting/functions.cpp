@@ -65,8 +65,9 @@ void bind_functions(pybind11::module& m)
             .value("Enter", TranscriptType::enter)
             .value("Exit", TranscriptType::exit)
             .value("Nack", TranscriptType::nack)
+            .value("Note", TranscriptType::note)
+            .value("Post", TranscriptType::post)
             .value("Recv", TranscriptType::recv)
-            .value("Send", TranscriptType::send)
             .value("State", TranscriptType::state)
             ;
 

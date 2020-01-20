@@ -20,7 +20,7 @@ enum class ThreadState {
     unknown, idle, working, busy, presenter
 };
 enum class TranscriptType {
-    ack, custom, enter, exit, nack, recv, send, state
+    ack, custom, enter, exit, nack, note, post, recv, send, state
 };
 enum class MessageStatus {
     pending, acknowledged, protested

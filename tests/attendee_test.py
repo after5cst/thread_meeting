@@ -130,7 +130,7 @@ class AttendeeTest(unittest.TestCase):
             # could have also use ... `as me` in the with statement.
             queue = thread_meeting.me().queue
             self.assertFalse(queue)
-            thread_meeting.me().add_to_queue("one", 1)
+            thread_meeting.me().note("one", 1)
             self.assertTrue(queue)
             self.assertIsInstance(queue.head, thread_meeting.Take)
             self.assertEqual(queue.head.payload, 1)

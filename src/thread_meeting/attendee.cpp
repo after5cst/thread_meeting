@@ -13,7 +13,7 @@ void Attendee::bind(pybind11::module& m)
             })
             .def_readonly("name", &Attendee::name)
             .def_readonly("valid", &Attendee::valid)
-            .def("add_to_queue", &Attendee::add_to_queue)
+            .def("note", &Attendee::note)
             .def_property_readonly("queue",
                 [](const Attendee &a) {
                 return pybind11::cast(a.queue);
@@ -22,11 +22,12 @@ void Attendee::bind(pybind11::module& m)
             ;
 }
 
-std::unique_ptr<Keep> Attendee::add_to_queue(std::string name,
+std::unique_ptr<Keep> Attendee::note(std::string name,
                                              pybind11::object payload)
 {
     auto keep = std::make_unique<Keep>(name, payload);
     auto take = keep->create_take(name);
+    transcribe(name, TranscriptType::note);
     queue->push(pybind11::cast(take));
     return keep;
 }
