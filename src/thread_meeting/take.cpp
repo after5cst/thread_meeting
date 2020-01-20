@@ -15,6 +15,7 @@ void Take::bind(pybind11::module& m)
                 return *(a.status);
             })
         .def("acknowledge", &Take::acknowledge)
+        .def_readonly("payload", &Take::payload)
         .def("protest", &Take::protest)
         .def("__repr__",
             [](const Take &a) {

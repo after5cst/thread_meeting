@@ -17,6 +17,8 @@ public:
 
     std::unique_ptr<EnterExit> request_baton();
     ThreadState current_state() const;
+    std::unique_ptr<Keep> add_to_queue(
+            std::string name, pybind11::object payload);
 
     std::string name;
     bool valid = true;

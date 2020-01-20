@@ -26,7 +26,7 @@ TranscriptScope::pointer_t TranscriptScope::set_target()
     auto item = pybind11::cast(TranscriptItem("Transcript", 
         TranscriptType::enter));
 
-    transcript->append(item);
+    transcript->push(item);
 
     return target;
 }
@@ -38,7 +38,7 @@ void TranscriptScope::clear_target(pointer_t& target)
         // See set_target() for explanation why transcribe() is not used.
         auto item = pybind11::cast(TranscriptItem("Transcript", 
             TranscriptType::exit));
-        target->append(item);
+        target->push(item);
         g_transcripts.erase(thread_id());
         target.reset();
     }

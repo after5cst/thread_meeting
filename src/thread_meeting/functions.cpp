@@ -38,7 +38,7 @@ pybind11::object transcribe(std::string message,
 
     for (auto& transcript : g_transcripts)
     {
-        transcript.second->append(item);
+        transcript.second->push(item);
     }
     return item;
 }
