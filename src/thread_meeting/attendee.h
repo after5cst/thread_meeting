@@ -16,7 +16,6 @@ public:
     static void bind(pybind11::module&);
 
     std::unique_ptr<EnterExit> request_baton();
-    ThreadState current_state() const;
     std::unique_ptr<Keep> note(
             std::string name, pybind11::object payload);
 
@@ -27,7 +26,6 @@ public:
     PeekableQueue::pointer_t queue = std::make_shared<PeekableQueue>(
         PeekableQueue::Options::disable_append);
 private:
-    mutable ThreadState m_last_state = ThreadState::unknown;
     const thread_id_t m_thread_id = PyThread_get_thread_ident();
 };
 

@@ -10,7 +10,7 @@ std::weak_ptr< Baton > g_baton;
 thread_id_t g_initial_thread_id = 0;
 transcripts_t g_transcripts;
 
-std::string as_string(const MessageStatus& status)
+const char* as_string(const MessageStatus& status)
 {
     switch (status)
     {
@@ -23,7 +23,7 @@ std::string as_string(const MessageStatus& status)
     }
 }
 
-std::string as_string(const TranscriptType& trans_type)
+const char* as_string(const TranscriptType& trans_type)
 {
     switch (trans_type)
     {

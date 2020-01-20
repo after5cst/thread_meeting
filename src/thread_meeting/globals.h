@@ -16,9 +16,6 @@ class Attendee;
 class Baton;
 class PeekableQueue;
 
-enum class ThreadState {
-    unknown, idle, working, busy, presenter
-};
 enum class TranscriptType {
     ack, custom, enter, exit, nack, note, post, recv, send, state
 };
@@ -34,8 +31,8 @@ extern std::weak_ptr< Baton > g_baton;
 extern thread_id_t g_initial_thread_id;
 extern transcripts_t g_transcripts;
 
-std::string as_string(const MessageStatus& status);
-std::string as_string(const TranscriptType& status);
+const char* as_string(const MessageStatus& status);
+const char* as_string(const TranscriptType& status);
 
 std::string verify_thread_name(std::string suggested_name = std::string(),
                                thread_id_t thread_id = 0);

@@ -58,29 +58,33 @@ pybind11::object transcribe(std::string message,
 void bind_functions(pybind11::module& m)
 {
     pybind11::enum_<MessageStatus>(m, "TakeStatus", pybind11::arithmetic())
-            .value("Pending", MessageStatus::pending)
-            .value("Acknowledged", MessageStatus::acknowledged)
-            .value("Protested", MessageStatus::protested)
-            ;
-
-    pybind11::enum_<ThreadState>(m, "ThreadState", pybind11::arithmetic())
-            .value("Unknown", ThreadState::unknown)
-            .value("Idle", ThreadState::idle)
-            .value("Working", ThreadState::working)
-            .value("Busy", ThreadState::busy)
-            .value("Presenter", ThreadState::presenter)
+            .value(as_string(MessageStatus::pending),
+                   MessageStatus::pending)
+            .value(as_string(MessageStatus::acknowledged),
+                   MessageStatus::acknowledged)
+            .value(as_string(MessageStatus::protested),
+                   MessageStatus::protested)
             ;
 
     pybind11::enum_<TranscriptType>(m, "TranscriptType", pybind11::arithmetic())
-            .value("Ack", TranscriptType::ack)
-            .value("Custom", TranscriptType::custom)
-            .value("Enter", TranscriptType::enter)
-            .value("Exit", TranscriptType::exit)
-            .value("Nack", TranscriptType::nack)
-            .value("Note", TranscriptType::note)
-            .value("Post", TranscriptType::post)
-            .value("Recv", TranscriptType::recv)
-            .value("State", TranscriptType::state)
+            .value(as_string(TranscriptType::ack),
+                   TranscriptType::ack)
+            .value(as_string(TranscriptType::custom),
+                   TranscriptType::custom)
+            .value(as_string(TranscriptType::enter),
+                   TranscriptType::enter)
+            .value(as_string(TranscriptType::exit),
+                   TranscriptType::exit)
+            .value(as_string(TranscriptType::nack),
+                   TranscriptType::nack)
+            .value(as_string(TranscriptType::note),
+                   TranscriptType::note)
+            .value(as_string(TranscriptType::post),
+                   TranscriptType::post)
+            .value(as_string(TranscriptType::recv),
+                   TranscriptType::recv)
+            .value(as_string(TranscriptType::state),
+                   TranscriptType::state)
             ;
 
     m.def("participate", &participate, pybind11::arg("attendee_name") = "");

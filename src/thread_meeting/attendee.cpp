@@ -44,17 +44,3 @@ std::unique_ptr<EnterExit> Attendee::request_baton()
 {
     return std::make_unique< BatonScope >(valid);
 }
-
-ThreadState Attendee::current_state() const
-{
-    auto result = ThreadState::unknown;
-    if (valid)
-    {
-
-    }
-    if (result != m_last_state)
-    {
-        m_last_state = result;
-    }
-    return result;
-}
