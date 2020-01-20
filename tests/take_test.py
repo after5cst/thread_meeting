@@ -62,14 +62,15 @@ class TakeTest(unittest.TestCase):
         take.protest()
         with self.assertRaises(ValueError) as context:
             take.acknowledge()
-        self.assertTrue("already set" in str(context.exception))
+        self.assertTrue("Can't change status" in str(context.exception),
+            str(context.exception))
         self.assertEqual(take.status, thread_meeting.TakeStatus.Protested)
         
         take = self.takes[1]
         take.acknowledge()
         with self.assertRaises(ValueError) as context:
             take.protest()
-        self.assertTrue("already set" in str(context.exception))
+        self.assertTrue("Can't change status" in str(context.exception))
         self.assertEqual(take.status, thread_meeting.TakeStatus.Acknowledged)
         
     def test_keep_sees_change_to_manual_acknowledge(self):

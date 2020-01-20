@@ -11,9 +11,11 @@ public:
     typedef std::shared_ptr<MessageStatus> status_t;
 
     static void bind(pybind11::module&);
-    Take(std::string name_in, pybind11::object payload_in)
+    Take(std::string name_in, pybind11::object payload_in, 
+         bool transcribe_status=false)
         : name(name_in), payload(payload_in),
-          status(std::make_shared<MessageStatus>(MessageStatus::pending))
+          status(std::make_shared<MessageStatus>(MessageStatus::pending)),
+          m_transcribe(transcribe_status)
     {}
     // We don't allow copying OR moving this object.
     // So by rule of 5, we need to specify all five.
@@ -32,23 +34,8 @@ public:
     status_t status;
 
 private:
-    void set_status(MessageStatus new_status, bool throw_on_error = true)
-    {
-        assert(new_status != MessageStatus::pending);
-        if (*status == MessageStatus::pending)
-        {
-            *status = new_status;
-        }
-        else if (*status == new_status)
-        {
-            // Do nothing: setting a status to itself is a NOOP.
-        }
-        else if (throw_on_error)
-        {
-            std::string msg = "Status of Take('" + name + "') already set";
-            throw std::invalid_argument(msg);
-        }
-    }
+    void set_status(MessageStatus new_status, bool throw_on_error = true);
+    bool m_transcribe;
 };
 
 #endif // TAKE_H

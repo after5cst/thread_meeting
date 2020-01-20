@@ -34,6 +34,8 @@ extern std::weak_ptr< Baton > g_baton;
 extern thread_id_t g_initial_thread_id;
 extern transcripts_t g_transcripts;
 
+std::string as_string(const MessageStatus& status);
+
 std::string verify_thread_name(std::string suggested_name = std::string());
 bool verify_python_thread_id(thread_id_t expected_id, bool throw_if_not=true);
 pybind11::object transcribe(std::string message,
