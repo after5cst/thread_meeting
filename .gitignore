@@ -37,3 +37,4 @@ pybind11Config*.cmake
 pybind11Targets.cmake
 
 .vscode
+/CMakeLists.txt.user
