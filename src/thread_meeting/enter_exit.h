@@ -41,14 +41,14 @@ public:
     }
 protected:
     EnterExitImpl() : m_python_thread_id(PyThread_get_thread_ident()) {}
-    virtual pointer_t set_target()
-    {
-        return std::make_shared<T>();
-    }
-    virtual void clear_target(pointer_t& target)
-    {
-        target.reset();
-    }
+    virtual pointer_t set_target() = 0;
+    // {
+    //     return std::make_shared<T>();
+    // }
+    virtual void clear_target(pointer_t& target) = 0;
+    // {
+    //     target.reset();
+    // }
     thread_id_t thread_id() const { return m_python_thread_id; }
 private:
     thread_id_t m_python_thread_id = 0;

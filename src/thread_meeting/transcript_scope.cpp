@@ -15,7 +15,8 @@ TranscriptScope::pointer_t TranscriptScope::set_target()
         return nullptr;
     }
 
-    auto target = std::make_shared<PeekableQueue>();
+    auto target = std::make_shared<PeekableQueue>(
+        PeekableQueue::Options::disable_append);
     transcript = target;
 
     // Normally, you should use the global function transcribe() to add 

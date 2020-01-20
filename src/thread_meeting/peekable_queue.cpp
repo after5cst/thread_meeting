@@ -19,6 +19,15 @@ void PeekableQueue::bind(pybind11::module& m)
 
 void PeekableQueue::append(pybind11::object obj)
 {
+    if (m_disable_append)
+    {
+        throw std::invalid_argument("append() disabled on this PeekableQueue");
+    }
+    push(std::move(obj));
+}
+
+void PeekableQueue::push(pybind11::object obj)
+{
     m_queue.push_back(obj);
 }
 

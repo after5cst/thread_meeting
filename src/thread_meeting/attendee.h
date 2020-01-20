@@ -20,7 +20,8 @@ public:
 
     std::string name;
     bool valid = true;
-    PeekableQueue::pointer_t queue = std::make_shared<PeekableQueue>();
+    PeekableQueue::pointer_t queue = std::make_shared<PeekableQueue>(
+        PeekableQueue::Options::disable_append);
 private:
     mutable ThreadState m_last_state = ThreadState::unknown;
 };
