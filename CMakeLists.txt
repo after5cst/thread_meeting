@@ -1,57 +1,33 @@
-cmake_minimum_required(VERSION 2.8.12)
-project(thread_meeting)
+cmake_minimum_required(VERSION 3.2)
 
-FIND_PACKAGE(PythonInterp 3 REQUIRED)
-FIND_PACKAGE(PythonLibs REQUIRED)
-message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
-message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
-message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
+#----------------------------------------------------------
+# Step 1: Setup the project with a project name.
+#         (Also configure the output as a pybind11 project)
+#
+set (PROJECT_NAME thread_meeting)
+project(${PROJECT_NAME})
+add_definitions("-g")
+include(cmake_helpers/helpers.cmake)
 
-set (HERE ${CMAKE_CURRENT_SOURCE_DIR})
-message(STATUS "HERE = ${HERE}")
-set(SOURCE_DIR "${HERE}/src/thread_meeting")
-set(SOURCES
-    "${SOURCE_DIR}/attendee.cpp"
-    "${SOURCE_DIR}/attendee.h"
-    "${SOURCE_DIR}/attendee_scope.cpp"
-    "${SOURCE_DIR}/attendee_scope.h"
-    "${SOURCE_DIR}/baton.cpp"
-    "${SOURCE_DIR}/baton.h"
-    "${SOURCE_DIR}/baton_scope.cpp"
-    "${SOURCE_DIR}/baton_scope.h"
-    "${SOURCE_DIR}/enter_exit.cpp"
-    "${SOURCE_DIR}/enter_exit.h"
-    "${SOURCE_DIR}/functions.cpp"
-    "${SOURCE_DIR}/functions.h"
-    "${SOURCE_DIR}/globals.cpp"
-    "${SOURCE_DIR}/globals.h"
-    "${SOURCE_DIR}/keep.cpp"
-    "${SOURCE_DIR}/keep.h"
-    "${SOURCE_DIR}/peekable_queue.cpp"
-    "${SOURCE_DIR}/peekable_queue.h"
-    "${SOURCE_DIR}/take.cpp"
-    "${SOURCE_DIR}/take.h"
-    "${SOURCE_DIR}/transcript_item.cpp"
-    "${SOURCE_DIR}/transcript_item.h"
-    "${SOURCE_DIR}/transcript_scope.cpp"
-    "${SOURCE_DIR}/transcript_scope.h"
+#----------------------------------------------------------
+# Step 2: Add this directory (root of the project)
+# to the include path.  This allows relative includes from
+# base to be used.
+include_directories(${CMAKE_CURRENT_LIST_DIR})
+
+#----------------------------------------------------------
+# Step 3: Add reusable sources and subdirectories.
+
+include(src/thread_meeting/thread_meeting.cmake)
+
+#----------------------------------------------------------
+# Step 4: Add the module initialization file.  There can
+#         be only one, so it's not inheritable by a parent
+#         project (like items in step 2 can be)
+target_sources( ${PROJECT_NAME}
+    PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}/init_module.cpp
     )
 
+AddClangFormat(${PROJECT_NAME})
 
-FILE(GLOB_RECURSE TESTS RELATIVE ${HERE} "tests/*_test.py")
-message( "TESTS=${TESTS}" )
-
-FILE(GLOB_RECURSE UTIL RELATIVE ${HERE} "tests/worker/*.py")
-message( "UTIL=${UTIL}" )
-
-INCLUDE_DIRECTORIES($(SOURCE_DIR))
-
-add_subdirectory(lib/pybind11)
-pybind11_add_module(thread_meeting ${SOURCES} ${SOURCE_DIR}/bindings.cpp
-    ${TESTS} ${UTIL})
-
-# Unit testing.
-enable_testing()
-add_test(NAME "unit_tests"
-         WORKING_DIRECTORY "${HERE}"
-         COMMAND ${PYTHON_EXECUTABLE} "setup.py" "test")

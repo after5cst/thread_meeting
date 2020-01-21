@@ -9,29 +9,27 @@
 #include "peekable_queue.h"
 #include "take.h"
 
-class Attendee
-{
+class Attendee {
 public:
-    typedef std::shared_ptr<Attendee> pointer_t;
-    static void bind(pybind11::module&);
+  typedef std::shared_ptr<Attendee> pointer_t;
+  static void bind(pybind11::module &);
 
-    std::unique_ptr<EnterExit> request_baton();
-    std::unique_ptr<Keep> note(
-            std::string name, pybind11::object payload);
+  std::unique_ptr<EnterExit> request_baton();
+  std::unique_ptr<Keep> note(std::string name, pybind11::object payload);
 
-    void add_to_queue(Take::pointer_t take);
+  void add_to_queue(Take::pointer_t take);
 
-    std::string name;
+  std::string name;
 
-    Attendee()
-    {
-        queue = std::make_shared<PeekableQueue>(
-               PeekableQueue::Options::disable_append);
-    }
-    bool valid = true;
-    PeekableQueue::pointer_t queue;
+  Attendee() {
+    queue =
+        std::make_shared<PeekableQueue>(PeekableQueue::Options::disable_append);
+  }
+  bool valid = true;
+  PeekableQueue::pointer_t queue;
+
 private:
-    const thread_id_t m_thread_id = PyThread_get_thread_ident();
+  const thread_id_t m_thread_id = PyThread_get_thread_ident();
 };
 
 #endif // ATTENDEE_H
