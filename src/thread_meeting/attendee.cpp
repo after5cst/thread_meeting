@@ -12,11 +12,14 @@ void Attendee::bind(pybind11::module& m)
                 return "<thread_Meeting.Attendee '" + a.name + "'>";
             })
             .def_readonly("name", &Attendee::name)
-            .def_readonly("valid", &Attendee::valid)
             .def("note", &Attendee::note)
             .def_property_readonly("queue",
                 [](const Attendee &a) {
                 return pybind11::cast(a.queue);
+                })
+            .def("__bool__",
+                [](const Attendee &a) {
+                return a.valid;
                 })
             .def("request_baton", &Attendee::request_baton)
             ;
@@ -35,7 +38,7 @@ std::unique_ptr<Keep> Attendee::note(std::string name,
                                      pybind11::object payload)
 {
     auto keep = std::make_unique<Keep>(name, payload);
-    auto take = keep->create_take(name);
+    auto take = keep->create_take();
     add_to_queue(take);
     return keep;
 }

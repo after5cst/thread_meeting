@@ -22,49 +22,49 @@ void Keep::bind(pybind11::module& m)
             );
 }
 
-Take::pointer_t Keep::create_take(std::string name)
+Take::pointer_t Keep::create_take()
 {
     auto ptr = std::make_shared<Take>(name, payload);
-    auto insert_result = m_map.insert({name, ptr->status});
-    if (!insert_result.second)
-    {
-        std::stringstream sstr;
-        sstr << "Duplicate take name '" << name << "'";
-        throw std::invalid_argument(sstr.str());
-    }
+    m_deque.push_back(ptr->status);
     return ptr;
 }
 
 
-pybind11::list Keep::acknowledged() const
+int Keep::acknowledged() const
 {
-    auto result = pybind11::list();
-    for (const auto& item : m_map)
+    auto result = 0;
+    for (const auto& item : m_deque)
     {
-        if (MessageStatus::acknowledged == *item.second)
-            result.append(pybind11::str(item.first));
+        if (MessageStatus::acknowledged == *item)
+        {
+            ++result;
+        }
     }
     return result;
 }
 
-pybind11::list Keep::pending() const
+int Keep::pending() const
 {
-    auto result = pybind11::list();
-    for (const auto& item : m_map)
+    auto result = 0;
+    for (const auto& item : m_deque)
     {
-        if (MessageStatus::pending == *item.second)
-            result.append(pybind11::str(item.first));
+        if (MessageStatus::pending == *item)
+        {
+            ++result;
+        }
     }
     return result;
 }
 
-pybind11::list Keep::protested() const
+int Keep::protested() const
 {
-    auto result = pybind11::list();
-    for (const auto& item : m_map)
+    auto result = 0;
+    for (const auto& item : m_deque)
     {
-        if (MessageStatus::protested == *item.second)
-            result.append(pybind11::str(item.first));
+        if (MessageStatus::protested == *item)
+        {
+            ++result;
+        }
     }
     return result;
 }

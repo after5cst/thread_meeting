@@ -41,10 +41,14 @@ set(SOURCES
 FILE(GLOB_RECURSE TESTS RELATIVE ${HERE} "tests/*_test.py")
 message( "TESTS=${TESTS}" )
 
+FILE(GLOB_RECURSE UTIL RELATIVE ${HERE} "tests/worker/*.py")
+message( "UTIL=${UTIL}" )
+
 INCLUDE_DIRECTORIES($(SOURCE_DIR))
 
 add_subdirectory(lib/pybind11)
-pybind11_add_module(thread_meeting ${SOURCES} ${SOURCE_DIR}/bindings.cpp ${TESTS})
+pybind11_add_module(thread_meeting ${SOURCES} ${SOURCE_DIR}/bindings.cpp
+    ${TESTS} ${UTIL})
 
 # Unit testing.
 enable_testing()

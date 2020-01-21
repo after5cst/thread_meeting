@@ -22,9 +22,14 @@ public:
     void add_to_queue(Take::pointer_t take);
 
     std::string name;
+
+    Attendee()
+    {
+        queue = std::make_shared<PeekableQueue>(
+               PeekableQueue::Options::disable_append);
+    }
     bool valid = true;
-    PeekableQueue::pointer_t queue = std::make_shared<PeekableQueue>(
-        PeekableQueue::Options::disable_append);
+    PeekableQueue::pointer_t queue;
 private:
     const thread_id_t m_thread_id = PyThread_get_thread_ident();
 };

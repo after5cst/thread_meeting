@@ -13,8 +13,9 @@ class TakeTest(unittest.TestCase):
     
     def setUp(self):
         self.keep = thread_meeting.Keep(_KEEP_NAME, None)
-        self.takes = [ self.keep.create_take(str(i)) 
-            for i in range(_DEFAULT_KEEP_COUNT) ]
+        self.takes = [ 
+            self.keep.create_take() for i in range(_DEFAULT_KEEP_COUNT)
+            ]
         
     def tearDown(self):
         del(self.takes)
@@ -25,7 +26,7 @@ class TakeTest(unittest.TestCase):
     
     def test_can_read_take_name(self):
         for i in range(_DEFAULT_KEEP_COUNT):
-            self.assertEqual(str(i), self.takes[i].name)
+            self.assertEqual(self.keep.name, self.takes[i].name)
 
     def test_cannot_change_take_name(self):
         take = self.takes[0]
@@ -75,33 +76,32 @@ class TakeTest(unittest.TestCase):
         
     def test_keep_sees_change_to_manual_acknowledge(self):
         take = self.takes[0]
-        self.assertNotIn('0', self.keep.acknowledged)
-        self.assertNotIn('0', self.keep.protested)
-        self.assertIn('0', self.keep.pending)
+        self.assertEqual(_DEFAULT_KEEP_COUNT, self.keep.pending)
+        self.assertEqual(0, self.keep.acknowledged)
+        self.assertEqual(0, self.keep.protested)
         take.acknowledge()
-        self.assertNotIn('0', self.keep.pending)
-        self.assertNotIn('0', self.keep.protested)
-        self.assertIn('0', self.keep.acknowledged)
+        self.assertEqual(_DEFAULT_KEEP_COUNT - 1, self.keep.pending)
+        self.assertEqual(1, self.keep.acknowledged)
+        self.assertEqual(0, self.keep.protested)
         
     def test_keep_sees_change_to_manual_protest(self):
         take = self.takes[0]
-        self.assertNotIn('0', self.keep.acknowledged)
-        self.assertNotIn('0', self.keep.protested)
-        self.assertIn('0', self.keep.pending)
+        self.assertEqual(_DEFAULT_KEEP_COUNT, self.keep.pending)
+        self.assertEqual(0, self.keep.acknowledged)
+        self.assertEqual(0, self.keep.protested)
         take.protest()
-        self.assertNotIn('0', self.keep.acknowledged)
-        self.assertNotIn('0', self.keep.pending)
-        self.assertIn('0', self.keep.protested)
+        self.assertEqual(_DEFAULT_KEEP_COUNT - 1, self.keep.pending)
+        self.assertEqual(0, self.keep.acknowledged)
+        self.assertEqual(1, self.keep.protested)
         
     def test_keep_sees_change_to_default_acknowledge(self):
-        self.assertNotIn('0', self.keep.acknowledged)
-        self.assertNotIn('0', self.keep.protested)
-        self.assertIn('0', self.keep.pending)
+        self.assertEqual(_DEFAULT_KEEP_COUNT, self.keep.pending)
+        self.assertEqual(0, self.keep.acknowledged)
+        self.assertEqual(0, self.keep.protested)
         self.takes[0] = None  # Remove the take: it should be auto-acknowledged.
-        self.assertNotIn('0', self.keep.pending)
-        self.assertNotIn('0', self.keep.protested)
-        self.assertIn('0', self.keep.acknowledged)
-        
+        self.assertEqual(_DEFAULT_KEEP_COUNT - 1, self.keep.pending)
+        self.assertEqual(1, self.keep.acknowledged)
+        self.assertEqual(0, self.keep.protested)
     
 
 if __name__ == '__main__':

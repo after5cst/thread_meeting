@@ -26,9 +26,9 @@ class KeepTest(unittest.TestCase):
     
     def test_keep_starts_with_no_takes(self):
         keep = thread_meeting.Keep(_KEEP_NAME)
-        self.assertListEqual(keep.acknowledged, list())
-        self.assertListEqual(keep.pending, list())
-        self.assertListEqual(keep.protested, list())
+        self.assertEqual(keep.acknowledged, 0)
+        self.assertEqual(keep.pending, 0)
+        self.assertEqual(keep.protested, 0)
 
 if __name__ == '__main__':
     unittest.main()

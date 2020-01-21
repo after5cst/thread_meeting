@@ -94,12 +94,12 @@ class AttendeeTest(unittest.TestCase):
             # The worker should have the baton, we should not.
             with me.request_baton() as baton:
                 self.assertIsNone(baton)
-                self.assertTrue(data['baton'].valid)
+                self.assertTrue(data['baton'])
             data['state'] = 'after'
             while data['state'] == 'after':
                 time.sleep(0.1)
             # Worker should have given up the baton, we can wait.
-            self.assertFalse(data['baton'].valid)
+            self.assertFalse(data['baton'])
             with me.request_baton() as baton:
                 self.assertIsNotNone(baton)
         # Tell the worker to quit, and wait on it.
@@ -111,15 +111,15 @@ class AttendeeTest(unittest.TestCase):
             # Find bilbo through a function call.
             me = thread_meeting.me()
             self.assertEqual(me.name, bilbo.name)
-            self.assertTrue(bilbo.valid)
-            self.assertTrue(me.valid)
+            self.assertTrue(bilbo)
+            self.assertTrue(me)
             # Ensure they are equivalent: get the baton with me.
             with me.request_baton() as baton:
                 self.assertIsNotNone(baton)
         # Ensure that bilbo and me both went invalid when
         # we left the 'with' statement.
-        self.assertFalse(bilbo.valid)
-        self.assertFalse(me.valid)
+        self.assertFalse(bilbo)
+        self.assertFalse(me)
         # And ensure that if I try to find me outside the with,
         # only None is returned.
         me = thread_meeting.me()

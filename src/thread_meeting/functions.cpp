@@ -9,6 +9,13 @@ std::unique_ptr< EnterExit > transcriber()
     return std::make_unique< TranscriptScope >();
 }
 
+std::unique_ptr< EnterExit > starting_baton()
+{
+    // We only can create a starting baton if the room is empty
+    // (no attendees yet).
+    return std::make_unique< BatonScope >(g_attendees.size() == 0);
+}
+
 std::unique_ptr< EnterExit > participate(std::string attendee_name)
 {
     return std::make_unique< AttendeeScope >(attendee_name);
@@ -32,7 +39,6 @@ pybind11::object python_transcribe(std::string message,
                                    TranscriptType transcript_type)
 {
     auto result = transcribe(message, transcript_type, 0);
-    assert(false);
     return result;
 }
 
@@ -89,6 +95,7 @@ void bind_functions(pybind11::module& m)
 
     m.def("participate", &participate, pybind11::arg("attendee_name") = "");
     m.def("me", &me);
+    m.def("starting_baton", starting_baton);
     m.def("transcribe", &python_transcribe,
           pybind11::arg("message"),
           pybind11::arg("message_type") = TranscriptType::custom);

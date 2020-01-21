@@ -2,7 +2,7 @@
 #define KEEP_H
 #include <atomic>
 #include <iostream>
-#include <map>
+#include <deque>
 #include <memory>
 #include <string>
 #include <pybind11/pybind11.h>
@@ -17,16 +17,16 @@ public:
         : name(name_in), payload(payload_in) {}
 
     // Methods for Python access
-    Take::pointer_t create_take(std::string take_name);
+    Take::pointer_t create_take();
     bool finished() const;
-    pybind11::list acknowledged() const;
-    pybind11::list protested() const;
-    pybind11::list pending() const;
+    int acknowledged() const;
+    int protested() const;
+    int pending() const;
 
     std::string name;
     pybind11::object payload;
 private:
-    std::map< std::string, Take::status_t > m_map;
+    std::deque< Take::status_t > m_deque;
 };
 
 #endif // KEEP_H
