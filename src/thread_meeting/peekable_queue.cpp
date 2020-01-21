@@ -7,7 +7,7 @@ void PeekableQueue::bind(pybind11::module &m) {
       .def("append", &PeekableQueue::append)
       .def("get", &PeekableQueue::get)
       .def("__bool__", [](const PeekableQueue &a) { return !a.empty(); })
-      .def("__repr__", [](const PeekableQueue &a) {
+      .def("__repr__", [](const PeekableQueue &) {
         return "<thread_meeting.PeekableQueue>";
       });
 }

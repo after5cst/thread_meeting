@@ -3,14 +3,14 @@
 #include <deque>
 #include <memory>
 
-#include "pybind11/pybind11.h"
+#include "globals.h"
 
 class PeekableQueue {
 public:
   enum class Options { enable_append, disable_append };
 
   PeekableQueue(Options options = Options::enable_append)
-      : m_disable_append(options == Options::disable_append) {}
+      : m_disable_append(options == Options::disable_append), m_queue() {}
   typedef std::shared_ptr<PeekableQueue> pointer_t;
   static void bind(pybind11::module &);
 
@@ -21,8 +21,8 @@ public:
   pybind11::object get();
 
 private:
-  std::deque<pybind11::object> m_queue;
   const bool m_disable_append;
+  std::deque<pybind11::object> m_queue;
 };
 
 #endif // _PEEKABLE_QUEUE

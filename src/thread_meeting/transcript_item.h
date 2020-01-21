@@ -2,7 +2,6 @@
 #define _TRANSCIPTION_ITEM
 
 #include "globals.h"
-#include "pybind11/pybind11.h"
 
 #include <memory>
 

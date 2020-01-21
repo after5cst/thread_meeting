@@ -1,6 +1,13 @@
 #ifndef _GLOBALS_H
 #define _GLOBALS_H
+
+// pybind11 generates a number of warnings.  Since we compile
+// with warnings as errors, disable the warnings.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Weffc++"
 #include "pybind11/pybind11.h"
+#pragma GCC diagnostic pop
+
 #include <memory>
 #include <unordered_map>
 

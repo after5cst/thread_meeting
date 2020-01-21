@@ -5,7 +5,7 @@
 void Baton::bind(pybind11::module &m) {
   pybind11::class_<Baton, Baton::pointer_t>(m, "Baton")
       .def("__bool__", [](const Baton &a) { return a.valid(); })
-      .def("__repr__", [](const Baton &a) { return "<thread_Meeting.Baton>"; })
+      .def("__repr__", [](const Baton &) { return "<thread_Meeting.Baton>"; })
       .def("post", &Baton::post);
 }
 

@@ -4,7 +4,6 @@
 #include <deque>
 #include <iostream>
 #include <memory>
-#include <pybind11/pybind11.h>
 #include <string>
 
 #include "take.h"
@@ -13,7 +12,7 @@ class Keep {
 public:
   static void bind(pybind11::module &);
   Keep(std::string name_in, pybind11::object payload_in)
-      : name(name_in), payload(payload_in) {}
+      : name(name_in), payload(payload_in), m_deque() {}
 
   // Methods for Python access
   Take::pointer_t create_take();

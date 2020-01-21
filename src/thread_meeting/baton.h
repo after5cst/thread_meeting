@@ -3,7 +3,6 @@
 
 #include "globals.h"
 #include "keep.h"
-#include "pybind11/pybind11.h"
 
 #include <memory>
 

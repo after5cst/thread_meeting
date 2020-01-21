@@ -2,7 +2,6 @@
 #define ENTER_EXIT_H
 #include "globals.h"
 #include <iostream>
-#include <pybind11/pybind11.h>
 
 class EnterExit {
 public:
@@ -26,15 +25,15 @@ public:
     m_target = set_target();
     return m_target ? pybind11::cast(m_target) : pybind11::none();
   }
-  virtual pybind11::object on_exit(pybind11::object exc_type,
-                                   pybind11::object exc_value,
-                                   pybind11::object traceback) override {
+  virtual pybind11::object on_exit(pybind11::object, // exc_type
+                                   pybind11::object, // exc_value,
+                                   pybind11::object  // traceback
+                                   ) override {
     clear_target(m_target);
     return pybind11::none();
   }
 
 protected:
-  EnterExitImpl() : m_python_thread_id(PyThread_get_thread_ident()) {}
   virtual pointer_t set_target() = 0;
   // {
   //     return std::make_shared<T>();
@@ -46,8 +45,8 @@ protected:
   thread_id_t thread_id() const { return m_python_thread_id; }
 
 private:
-  thread_id_t m_python_thread_id = 0;
-  pointer_t m_target;
+  thread_id_t m_python_thread_id = PyThread_get_thread_ident();
+  pointer_t m_target = pointer_t();
 };
 
 #endif // ENTER_EXIT_H

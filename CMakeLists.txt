@@ -30,4 +30,3 @@ target_sources( ${PROJECT_NAME}
     )
 
 AddClangFormat(${PROJECT_NAME})
-

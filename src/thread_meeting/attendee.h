@@ -1,8 +1,8 @@
 #ifndef ATTENDEE_H
 #define ATTENDEE_H
+#include "globals.h"
 #include <deque>
 #include <memory>
-#include <pybind11/pybind11.h>
 
 #include "baton_scope.h"
 #include "keep.h"
@@ -19,14 +19,10 @@ public:
 
   void add_to_queue(Take::pointer_t take);
 
-  std::string name;
-
-  Attendee() {
-    queue =
-        std::make_shared<PeekableQueue>(PeekableQueue::Options::disable_append);
-  }
+  std::string name = std::string();
+  PeekableQueue::pointer_t queue =
+      std::make_shared<PeekableQueue>(PeekableQueue::Options::disable_append);
   bool valid = true;
-  PeekableQueue::pointer_t queue;
 
 private:
   const thread_id_t m_thread_id = PyThread_get_thread_ident();

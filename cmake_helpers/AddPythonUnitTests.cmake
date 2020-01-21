@@ -10,7 +10,7 @@ function(AddPythonUnitTests UNIT_TEST_LABEL SOURCE_DIR TARGET_DIR)
     if(${ENABLE_ADD_PYTHON_UNIT_TESTS})
         add_test(NAME "${UNIT_TEST_LABEL}_test" COMMAND "${PYTHON_EXECUTABLE}"
             -m unittest discover -v -f
-            -s "${SOURCE_DIR}"
+            -s "${SOURCE_DIR}" -p "*_test.py"
             WORKING_DIRECTORY "${TARGET_DIR}")
     endif(${ENABLE_ADD_PYTHON_UNIT_TESTS})
 endfunction(AddPythonUnitTests)

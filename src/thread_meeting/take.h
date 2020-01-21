@@ -2,7 +2,6 @@
 #define TAKE_H
 #include "globals.h"
 #include <memory>
-#include <pybind11/pybind11.h>
 
 class Take {
 public:

@@ -2,7 +2,7 @@
 
 #include "attendee.h"
 
-#include "pybind11/pybind11.h"
+#include <assert.h>
 #include <sstream>
 
 attendees_t g_attendees;
@@ -19,6 +19,8 @@ const char *as_string(const MessageStatus &status) {
   case MessageStatus::protested:
     return "Protested";
   }
+  assert(false);
+  return "";
 }
 
 const char *as_string(const TranscriptType &trans_type) {
@@ -44,6 +46,8 @@ const char *as_string(const TranscriptType &trans_type) {
   case TranscriptType::state:
     return "State";
   }
+  assert(false);
+  return "";
 }
 
 bool verify_python_thread_id(thread_id_t expected_id, bool throw_if_not) {

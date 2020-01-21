@@ -29,10 +29,10 @@ enable_testing()
 include(${CMAKE_CURRENT_LIST_DIR}/AddPythonUnitTests.cmake)
 AddPythonUnitTests( "${PROJECT_NAME}" "${CMAKE_SOURCE_DIR}"
     "${CMAKE_BINARY_DIR}")
-file(GLOB_RECURSE PYTHON_TEST_SCRIPTS ${PROJECT_SOURCE_DIR} *_test.py)
+file(GLOB_RECURSE PYTHON_TEST_SCRIPTS ${PROJECT_SOURCE_DIR} "*_test.py")
+message("PYTHON_TEST_SCRIPTS=${PYTHON_TEST_SCRIPTS}")
 
 # pybind11 is our library that makes C++ to Python "easy"
 # "easy" is very much a relative term.
 add_subdirectory(${CMAKE_SOURCE_DIR}/lib/pybind11)
 pybind11_add_module("${PROJECT_NAME}" ${PYTHON_TEST_SCRIPTS})
-

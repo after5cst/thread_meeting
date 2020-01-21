@@ -29,12 +29,11 @@ void TranscriptItem::bind(pybind11::module &m) {
 TranscriptItem::TranscriptItem(std::string message_in,
                                TranscriptType transcript_type,
                                thread_id_t destination_id)
-    : message(message_in), message_type(transcript_type),
+    : source(verify_thread_name(std::string())),
+      destination(verify_thread_name(std::string(), destination_id)),
+      message(message_in), message_type(transcript_type),
       timestamp(pybind11::cast(std::chrono::system_clock::now())) {
   if (message_in.size() == 0) {
     throw std::invalid_argument("Message may not be empty.");
   }
-
-  source = verify_thread_name(std::string());
-  destination = verify_thread_name(std::string(), destination_id);
 }
