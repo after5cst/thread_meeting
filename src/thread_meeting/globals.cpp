@@ -43,6 +43,8 @@ const char* as_string(const TranscriptType& trans_type)
         return "Post";
     case TranscriptType::recv:
         return "Recv";
+    case TranscriptType::send:
+        return "Send";
     case TranscriptType::state:
         return "State";
     }
@@ -108,7 +110,7 @@ std::string verify_thread_name(std::string suggested_name,
         // for the suggested name.
         std::stringstream sstr;
         sstr << "(" << id << ")";
-        suggested_name = std::move(sstr.str());
+        suggested_name = sstr.str();
     }
 
     // Second pass: Try `suggested_name` (and then `suggested_name 1`,
