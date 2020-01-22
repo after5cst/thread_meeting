@@ -66,5 +66,5 @@ setup(
     ext_modules=[CMakeExtension('thread_meeting')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
-    test_suite='tests',
+    test_suite='tests', install_requires=['overrides']
 )

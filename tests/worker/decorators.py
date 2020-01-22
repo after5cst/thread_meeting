@@ -1,5 +1,6 @@
 import thread_meeting as meeting
 
+
 def transcribe_func(func):
     """
     Decorator to log a state entry and exit.

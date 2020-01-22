@@ -30,6 +30,7 @@ MANIFEST
 .DS_Store
 /dist
 /build
+/venv
 /cmake/
 .cache/
 sosize-*.txt
@@ -37,4 +38,5 @@ pybind11Config*.cmake
 pybind11Targets.cmake
 
 .vscode
+.idea/
 /CMakeLists.txt.user

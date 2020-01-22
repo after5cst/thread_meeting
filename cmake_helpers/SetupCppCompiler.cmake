@@ -17,11 +17,11 @@ if("${ENABLE_CPP_WARNINGS}" MATCHES "ON")
         set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wall -Wpedantic -Wunused-value -Wunused -Wcast-qual -Wpointer-arith")
         set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wextra -Wcast-align -Wdisabled-optimization -Wformat-y2k")
         set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wno-format-extra-args -Wformat-nonliteral -Wformat=2 -Winit-self")
-        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Winvalid-pch -Wunsafe-loop-optimizations -Wmissing-include-dirs")
+        set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Winvalid-pch -Wmissing-include-dirs")
         set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wmissing-braces -Wpacked -Wredundant-decls -Wstack-protector")
         set(GNU_CXX_FLAGS "${GNU_CXX_FLAGS} -Wswitch-enum -Wuninitialized -Weffc++ -Wformat-security -Werror")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GNU_CXX_FLAGS} -pthread")
-
+        # Removed: -Wunsafe-loop-optimizations
         # check GNU CXX compiler version
         if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER "4.9" OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "4.9")
             add_definitions(-D_GLIBCXX_USE_NANOSLEEP)
