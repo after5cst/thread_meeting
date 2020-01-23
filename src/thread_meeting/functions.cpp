@@ -71,6 +71,6 @@ void bind_functions(pybind11::module &m) {
   m.def("me", &me);
   m.def("starting_baton", starting_baton);
   m.def("transcribe", &python_transcribe, pybind11::arg("message"),
-        pybind11::arg("message_type") = TranscriptType::custom);
+        pybind11::arg("ti_type") = TranscriptType::custom);
   m.def("transcriber", &transcriber);
 }

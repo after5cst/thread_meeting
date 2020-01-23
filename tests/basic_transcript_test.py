@@ -20,14 +20,14 @@ class BasicTranscriptTest(unittest.TestCase):
             if dump:
                 print(item)
             self.assertIsInstance(item, TI)
-            self.assertEqual(arg.message_type, item.message_type)
+            self.assertEqual(arg.ti_type, item.ti_type)
             self.assertTrue(arg.message in item.message,
                 "'{}' not in '{}'".format(arg.message, item.message)
                 )
             self.assertEqual(arg.message, item.message)
         if transcriber:
             self.assertFalse(bool(transcriber), "Unexpected item '{}:{}'".format(
-                transcriber.head.message_type, transcriber.head.message
+                transcriber.head.ti_type, transcriber.head.message
                 ))
     
     def test_transcribe_requires_message(self):

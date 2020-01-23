@@ -1,9 +1,9 @@
 import thread_meeting as meeting
 
 from overrides import EnforceOverrides, final  # , overrides
-import ctypes
 import enum
 import concurrent.futures
+import random
 import time
 from typing import Optional
 
@@ -139,6 +139,8 @@ class Worker(EnforceOverrides):
         return None
 
     def on_start(self, payload) -> FuncAndData:
+        time_delay = random.uniform(0.5, 1.5)
+        time.sleep(time_delay)
         self._post_to_self(Message.QUIT)
         return FuncAndData()
 

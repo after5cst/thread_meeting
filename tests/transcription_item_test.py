@@ -1,4 +1,4 @@
-from datetime import datetime
+import time
 import unittest
 
 from thread_meeting import TranscriptType as TT
@@ -14,20 +14,24 @@ class TranscriptItemTest(unittest.TestCase):
             in str(context.exception), str(context.exception))
 
     def test_transcript_item_sets_defaults(self):
-        before = datetime.now()
+        before = time.time()
+        # Need a sleep before and after because Transcript
+        # time stamps are only ms-accurate
+        time.sleep(1.0)
         item = TranscriptItem('hi')
-        after = datetime.now()
+        time.sleep(1.0)
+        after = time.time()
         self.assertEqual(item.message, 'hi')
-        self.assertEqual(item.message_type, TT.Custom)
+        self.assertEqual(item.ti_type, TT.Custom)
         # This should be on the primary thread, so the name is set.
         self.assertEqual(item.source, '(primary)')
         self.assertEqual(item.destination, '(primary)')
-        self.assertGreaterEqual(item.timestamp, before)
-        self.assertLessEqual(item.timestamp, after)
+        self.assertGreater(item.timestamp, before)
+        self.assertLess(item.timestamp, after)
 
     def test_transcript_item_can_init_type(self):
         item = TranscriptItem('message', TT.Ack)
-        self.assertEqual(item.message_type, TT.Ack)
+        self.assertEqual(item.ti_type, TT.Ack)
 
     def test_transcript_item_cannot_change_values(self):
         item = TranscriptItem('message')
@@ -49,12 +53,12 @@ class TranscriptItemTest(unittest.TestCase):
             in str(context.exception), str(context.exception))
 
         with self.assertRaises(AttributeError) as context:
-            item.message_type = TT.Custom
+            item.ti_type = TT.Custom
         self.assertTrue("can't set attribute"
             in str(context.exception), str(context.exception))
 
         with self.assertRaises(AttributeError) as context:
-            item.timestamp = datetime.now()
+            item.timestamp = time.time()
         self.assertTrue("can't set attribute"
             in str(context.exception), str(context.exception))
 

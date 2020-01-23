@@ -16,8 +16,8 @@ public:
   std::string source;
   std::string destination;
   std::string message;
-  TranscriptType message_type;
-  pybind11::object timestamp;
+  TranscriptType ti_type;
+  double timestamp;
 
 private:
 };
