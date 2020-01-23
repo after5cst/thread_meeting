@@ -15,8 +15,7 @@ void TranscriptItem::bind(pybind11::module &m) {
            [](const TranscriptItem &a) {
              std::stringstream sstr;
              sstr << "< " << a.source << " --[" << a.message << ","
-                  << as_string(a.ti_type) << "]--> " << a.destination
-                  << " >";
+                  << as_string(a.ti_type) << "]--> " << a.destination << " >";
              return sstr.str();
            })
       .def_readonly("source", &TranscriptItem::source)

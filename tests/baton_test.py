@@ -182,7 +182,7 @@ class BatonTest(unittest.TestCase):
                 self.assertTrue(worker.state == WorkerState.FINAL)
 
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            tmp_dir_name = '/tmp'
+            # tmp_dir_name = '/tmp'
             file_path = None
             while queue:
                 entry = queue.get()
