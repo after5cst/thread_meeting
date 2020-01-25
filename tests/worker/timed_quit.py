@@ -21,8 +21,17 @@ class TimedQuit(Worker):
         return self.on_idle
 
     def on_timer(self):
-        if not self._post_to_others(Message.QUIT,
-                                    target_state=WorkerState.FINAL):
-            # Message was not posted, try again later.
-            return self.on_timer
-        return self.on_quit
+        """
+        Tell other workers to quit.
+        If this is successful,
+        :return:
+        """
+        my_message = Message.TIMER
+        if self._post_to_others(Message.QUIT,
+                                target_state=WorkerState.FINAL):
+            my_message = Message.QUIT
+        # Post a message in our Queue.  This is done rather than
+        # returning the next function to call because we want to
+        # ensure that the message is not dropped by having
+        # a message in the queue.
+        self._post_to_self(item=my_message)

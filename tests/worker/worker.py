@@ -142,7 +142,7 @@ class Worker(EnforceOverrides):
         :param payload: The payload (if any) of the message.
         """
         queue = self._queue()
-        thread_meeting.transcribe("Ignoring '{}'".format(name))
+        self._debug("Ignoring '{}'".format(name))
         return FuncAndData(self.on_message if queue else self.on_idle)
 
     def on_idle(self) -> Optional[FuncAndData]:
@@ -167,9 +167,7 @@ class Worker(EnforceOverrides):
         queue = self._queue()
         if not queue:
             # Weird, the message is gone.
-            thread_meeting.transcribe(
-                "on_message called without a message",
-                ti_type=thread_meeting.TranscriptType.Debug)
+            self._debug("on_message called without a message")
             return FuncAndData(self.on_idle)
 
         item = queue.get()
@@ -233,7 +231,7 @@ class Worker(EnforceOverrides):
                         self._fad = func_return
                     elif func_return is None:
                         # No instructions.  Default to IDLE.
-                        self._fad = self.on_idle
+                        self._fad = FuncAndData(self.on_idle)
                     else:
                         raise RuntimeError("Illegal return value from function")
 
@@ -261,15 +259,24 @@ class Worker(EnforceOverrides):
             else:
                 break
 
+    def _debug(self, message: str) -> None:
+        """
+        Write a debug message to the transcript.
+        :param message: The message to write.
+        :return: None
+        """
+        thread_meeting.transcribe(message,
+                                  ti_type=thread_meeting.TranscriptType.Debug)
+
     def _queue_message_after_delay(self, *, message: enum.Enum,
-                                   delay_in_sec: int) -> None:
+                                   delay_in_sec: float) -> None:
         """
         Post a note to this worker after no less than some specified delay.
         :param note: The message to note.
         :param delay_in_sec: The delay time in seconds.
         :return: None
         """
-        target_time = time.time() + int(delay_in_sec)
+        target_time = time.time() + float(delay_in_sec)
         while target_time in self._wake_from_idle_after:
             target_time += 1
         self._wake_from_idle_after[target_time] = message
@@ -354,9 +361,3 @@ class Worker(EnforceOverrides):
             raise RuntimeError("{}: Not in a meeting".format(
                 inspect.stack()[1].function))
         return self._attendee.queue
-
-    def _wait_for_others_to_reach_state(
-            self, desired_state: WorkerState = WorkerState.IDLE) -> bool:
-        start_time = time.time()
-
-
