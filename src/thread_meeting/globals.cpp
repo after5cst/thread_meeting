@@ -29,6 +29,8 @@ const char *as_string(const TranscriptType &trans_type) {
     return "Ack";
   case TranscriptType::custom:
     return "Custom";
+  case TranscriptType::debug:
+    return "Debug";
   case TranscriptType::enter:
     return "Enter";
   case TranscriptType::exit:

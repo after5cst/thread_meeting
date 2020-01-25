@@ -5,5 +5,6 @@ from enum import Enum
 # The base Worker class requires the following messages:
 # START and QUIT.  More messages can be added as needed.
 class Message(Enum):
+    TIMER = 'timer'
     START = 'start'
     QUIT = 'quit'

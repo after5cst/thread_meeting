@@ -26,6 +26,7 @@ class PeekableQueue;
 enum class TranscriptType {
   ack,
   custom,
+  debug,
   enter,
   exit,
   nack,

@@ -59,6 +59,7 @@ void bind_functions(pybind11::module &m) {
   pybind11::enum_<TranscriptType>(m, "TranscriptType", pybind11::arithmetic())
       .value(as_string(TranscriptType::ack), TranscriptType::ack)
       .value(as_string(TranscriptType::custom), TranscriptType::custom)
+      .value(as_string(TranscriptType::debug), TranscriptType::debug)
       .value(as_string(TranscriptType::enter), TranscriptType::enter)
       .value(as_string(TranscriptType::exit), TranscriptType::exit)
       .value(as_string(TranscriptType::nack), TranscriptType::nack)

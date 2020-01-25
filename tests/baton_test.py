@@ -6,20 +6,24 @@ if __name__ == '__main__':
     from utils.object_array_storage import ObjectArrayStorage
     from worker import Worker
     from worker import WorkerState
+    from worker import IdleUntilQuit
 else:
     from .utils.object_array_storage import ObjectArrayStorage
     from .worker import Worker
     from .worker import WorkerState
+    # Worker-derived classes
+    from .worker import IdleUntilQuit
+    from .worker import TimedQuit
 
 
 class BatonTest(unittest.TestCase):
 
     def test_can_send_message_to_worker(self):
         queue = None
+        workers = [IdleUntilQuit(), TimedQuit(5)]
         try:
             with transcriber() as transcript:
                 queue = transcript  # Keep transcript from losing scope.
-                workers = [Worker(name='worker') for i in range(2)]
                 Worker.execute_meeting(*workers)
                 # If we get here, then we managed to start the workers,
                 # sent a start message, and the workers exited.
@@ -31,9 +35,10 @@ class BatonTest(unittest.TestCase):
                 while queue:
                     oas.append(queue.get())
 
-        print('oas_path={}'.format(oas.path))
-        if oas.path.is_file():
-            print(oas)
+            print('oas_path={}'.format(oas.path))
+            if oas.path.is_file():
+                print(oas)
+                oas.path.unlink()
 
 
 if __name__ == '__main__':

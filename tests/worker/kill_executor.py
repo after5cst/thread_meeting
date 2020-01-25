@@ -9,7 +9,9 @@ def terminate_thread(thread):
 
     :param thread: a threading.Thread instance
     """
-    if not thread.isAlive():
+    # Use non-deprecated function if available.
+    living = thread.is_alive if hasattr(thread, 'is_alive') else thread.isAlive
+    if not living():
         return
 
     exc = ctypes.py_object(SystemExit)

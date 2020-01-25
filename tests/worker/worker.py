@@ -1,8 +1,9 @@
-import thread_meeting as meeting
+import thread_meeting
 
-from overrides import EnforceOverrides, final  # , overrides
-import enum
 import concurrent.futures
+import enum
+import inspect
+from overrides import EnforceOverrides, final  # , overrides
 import random
 import time
 from typing import Optional
@@ -39,19 +40,22 @@ class Worker(EnforceOverrides):
         """
         if 0 == len(args):
             # A meeting with nobody in it.  Cancel it.
-            meeting.transcribe("Canceled meeting with no attendees.")
+            thread_meeting.transcribe("Canceled meeting with no attendees.")
             return
+        workers = args
 
         with concurrent.futures.ThreadPoolExecutor(
                 max_workers=len(args)) as executor:
 
             # We MUST have the starting baton before creating workers,
             # otherwise they WILL keep us from getting it.
-            with meeting.starting_baton() as baton:
+            with thread_meeting.starting_baton() as baton:
                 if not baton:
                     # Should NEVER happen!
                     raise RuntimeError("Could not get starting baton!")
 
+                for worker in workers:
+                    worker.meeting_members = workers
                 # Start all workers.
                 futures = [executor.submit(worker.thread_entry)
                            for worker in args]
@@ -66,7 +70,7 @@ class Worker(EnforceOverrides):
                     time.sleep(0.3)
 
                 if not ready:
-                    # If initialization takes more than 20 seconds, assume
+                    # If initialization takes more than 6 seconds, assume
                     # something is wrong.  Ask the living ones to quit,
                     # and then kill the zombies.
                     baton.post(Message.QUIT.value, None)
@@ -75,22 +79,27 @@ class Worker(EnforceOverrides):
                     raise RuntimeError("Worker(s) failed to reach IDLE state")
 
                 baton.post(Message.START.value, None)  # OK, let's go!
-
             # Now nothing to do but wait for the end.
             for future in concurrent.futures.as_completed(futures):
                 try:
                     state = future.result()
                 except BaseException as e:
                     kill_executor(executor)
-                    raise
+                    raise RuntimeError("Worker failed") from e
 
     # CONSTRUCTOR AND PROPERTIES
-    def __init__(self, *, name: str, enum_class: enum.Enum = Message):
+    def __init__(self, *, name: str = '', enum_class: enum.Enum = Message):
+        if not name:
+            name = self.__class__.__name__
         self._requested_name = name
         self._state = None
         self._attendee = None
         self._fad = None
         self._Message = enum_class
+        self._wake_from_idle_after = dict()
+
+        self.meeting_members = list()
+        self.timeout = 60  # Expect to respond within 60 seconds.
 
     @property
     def name(self) -> Optional[str]:
@@ -106,14 +115,15 @@ class Worker(EnforceOverrides):
     def state(self) -> WorkerState:
         if not self._attendee:
             new_state = WorkerState.FINAL if self._state else WorkerState.INIT
-        elif not self._fad:
+        elif self._fad.func == self.on_idle:
             new_state = WorkerState.IDLE
         else:
             new_state = WorkerState.BUSY
         # TODO : WorkerState.WORK
 
         if new_state != self._state:
-            meeting.transcribe(new_state.value, meeting.TranscriptType.State)
+            thread_meeting.transcribe(new_state.value,
+                                      thread_meeting.TranscriptType.State)
             self._state = new_state
 
         return self._state
@@ -122,55 +132,68 @@ class Worker(EnforceOverrides):
     def end_meeting(self):
         pass
 
-    def on_default(self, data) -> FuncAndData:
+    def on_default(self, name, payload) -> FuncAndData:
         """
+        Process an unknown message.
         This method is called if the worker doesn't find an appropriate
-        function to call from the queue item.  In many cases, this item
-        probably just needs to be ignored.
-        :param data: A tuple of (name, payload) that was found in the queue.
+        function to call from the queue item.  The default behavior is to
+        ignore the item.
+        :param name: The name of the message.
+        :param payload: The payload (if any) of the message.
         """
-        name, payload = data
-        meeting.transcribe("Ignoring '{}'".format(name))
-        return self._fad
+        queue = self._queue()
+        thread_meeting.transcribe("Ignoring '{}'".format(name))
+        return FuncAndData(self.on_message if queue else self.on_idle)
 
-    def on_idle(self, payload) -> FuncAndData:
-        while self._attendee and not self._attendee.queue:
+    def on_idle(self) -> Optional[FuncAndData]:
+        """
+        Wait for an item to be put in the queue.
+        :return: The next function to be called.
+        """
+        queue = self._queue()
+        while not queue:
+            # No items in the queue means we are still idle.
             time.sleep(0.1)
-        if self._attendee and self._attendee.queue:
-            return FuncAndData(self.on_message())
+            self._check_for_delayed_messages()
+        # There's a message: we're no longer idle.
+        return FuncAndData(self.on_message)
 
-    def on_message(self, fad: Optional[FuncAndData]
-                   ) -> Optional[FuncAndData]:
+    def on_message(self) -> Optional[FuncAndData]:
         """
         Process a message from the queue.
-        :param fad: The default FunctionAndData object
-        :return: The possibly changed FuncAndData object
+        :param kwargs:  Ignored.
+        :return: The next function to be called.
         """
-        if not self._attendee.queue:
-            # No items in the queue, use the default.
-            return fad
+        queue = self._queue()
+        if not queue:
+            # Weird, the message is gone.
+            thread_meeting.transcribe(
+                "on_message called without a message",
+                ti_type=thread_meeting.TranscriptType.Debug)
+            return FuncAndData(self.on_idle)
 
-        item = self._attendee.queue.get()
-        fad.data = item.payload
+        item = queue.get()
+        fad = FuncAndData()
 
         func_name = "on_{}".format(item.name)
         new_func = getattr(self, func_name, None)
         if callable(new_func):
             fad.func = new_func
+            fad.data = dict()
+            if item.payload is not None:
+                fad.data = dict(payload=item.payload)
         else:
             fad.func = self.on_default
-            fad.data = (item.name, item.payload)
+            fad.data = dict(name=item.name, payload=item.payload)
         return fad
 
-    def on_start(self, payload) -> FuncAndData:
-        time_delay = random.uniform(0.5, 1.5)
-        time.sleep(time_delay)
-        self._post_to_self(Message.QUIT)
-        return FuncAndData()
-
-    def on_quit(self, payload) -> FuncAndData:
+    def on_quit(self) -> None:
+        """
+        Process a QUIT message.  This should be the final message processed.
+        :return: None
+        """
         self._attendee = None
-        return FuncAndData()
+        return None
 
     # PUBLIC METHODS
     @final
@@ -178,46 +201,128 @@ class Worker(EnforceOverrides):
         """
         Thread entry point launched by start_all for each worker.
         """
-        with meeting.participate(self._requested_name) as self._attendee:
+        with thread_meeting.participate(self._requested_name) as self._attendee:
+            self._fad = FuncAndData(self.on_idle)
             while self.state != WorkerState.FINAL:
                 try:
-                    if self.state == WorkerState.IDLE:
-                        fad = FuncAndData(self.on_idle)
+                    # If we have any delayed messages to add to the queue,
+                    # then add them (to the back).
+                    self._check_for_delayed_messages()
+
+                    data = self._fad.data if self._fad.data else dict()
+
+                    # Don't log enter/exit for on_message, but do for
+                    # everything else.
+                    if self._fad.func == self.on_message:
+                        func = self._fad.func
                     else:
-                        fad = self._fad
-                    fad = self.on_message(fad)
-                    if fad:
-                        # Wrapper the function so it will transcribe
-                        # that it started/stopped.  Then call it.
-                        func = transcribe_func(self, fad.func)
-                        self._fad = func(fad.data)
+                        func = transcribe_func(self, self._fad.func)
+
+                    # Run the function and find out what the next function is.
+                    if self._fad.data:
+                        func_return = func(**data)
                     else:
-                        self._fad = None
+                        func_return = func()
+
+                    if callable(func_return):
+                        # If the callee just returned the next function,
+                        # there's no data.  Wrap it into a FuncAndData for them.
+                        self._fad = FuncAndData(func_return)
+                    elif isinstance(func_return, FuncAndData):
+                        # The callee returned exactly what we want.
+                        self._fad = func_return
+                    elif func_return is None:
+                        # No instructions.  Default to IDLE.
+                        self._fad = self.on_idle
+                    else:
+                        raise RuntimeError("Illegal return value from function")
 
                 except BaseException:
                     self.end_meeting()
                     raise
         return self.state
 
-    # PRIVATE METHODS
-    def _post_to_others(self, item: enum.Enum, *, payload=None) -> None:
+    # PROTECTED METHODS
+    def _check_for_delayed_messages(self) -> None:
         """
-        Post a message to our own queue.
-        This message does not raise an exception and will be
-        processed whenever this object gets around to running
-        _process_queue_item.
+        Add messages to the queue if the delay has been met.
+        :return: None
+        """
+        if not self._attendee:
+            # No queue.
+            return
+        queue = self._attendee.queue
+        keys = sorted(self._wake_from_idle_after.keys())
+        now = time.time()
+        for key in keys:
+            if key <= now:
+                self._post_to_self(item=self._wake_from_idle_after[key])
+                del self._wake_from_idle_after[key]
+            else:
+                break
+
+    def _queue_message_after_delay(self, *, message: enum.Enum,
+                                   delay_in_sec: int) -> None:
+        """
+        Post a note to this worker after no less than some specified delay.
+        :param note: The message to note.
+        :param delay_in_sec: The delay time in seconds.
+        :return: None
+        """
+        target_time = time.time() + int(delay_in_sec)
+        while target_time in self._wake_from_idle_after:
+            target_time += 1
+        self._wake_from_idle_after[target_time] = message
+
+    def _post_to_others(self, item: enum.Enum, *, payload=None,
+                        target_state: Optional[WorkerState] = None
+                        ) -> bool:
+        """
+        Post a message to other workers.
 
         An exception will be raised if the item is not an instance
         of the self._Message class.
 
         :param item: The message to post.
         :param payload: The optional payload to post.
-        :return: None
+        :param target_state: The state to wait for the other workers to reach.
+        :return: True if message was posted.
         """
         if not isinstance(item, self._Message):
             raise ValueError("Invalid item type({} != {}".format(
                 type(item), self._Message))
-        self._attendee.note(item.value, payload)
+        with self._attendee.request_baton() as baton:
+            if baton is None:
+                thread_meeting.transcribe(
+                    "Failed to acquire baton",
+                    ti_type=thread_meeting.TranscriptType.Debug)
+                return False
+
+            take = baton.post(item.value, payload)
+            if target_state is None:
+                return True
+            # In case the thread has quit (so it won't respond), we need to
+            # also check for the FINAL state.
+            target_states = set([WorkerState.FINAL, target_state])
+
+            # Wait for all other threads to acknowledge receiving the message.
+            start_time = time.time()
+            wait_until = dict()
+            for member in self.meeting_members:
+                if member == self:
+                    continue
+                wait_until[member] = start_time + member.timeout
+
+            while wait_until:
+                now = time.time()
+                for worker in [worker for worker in wait_until
+                               if worker.state in target_states]:
+                    del wait_until[worker]
+                for worker, timeout in wait_until.items():
+                    if timeout < now:
+                        raise TimeoutError(worker.name)
+                time.sleep(0.1)
+        return True
 
     def _post_to_self(self, item: enum.Enum, *, payload=None) -> None:
         """
@@ -237,3 +342,21 @@ class Worker(EnforceOverrides):
             raise ValueError("Invalid item type({} != {}".format(
                 type(item), self._Message))
         self._attendee.note(item.value, payload)
+
+    def _queue(self) -> thread_meeting.PeekableQueue:
+        """
+        Return the Attendee queue object.
+        If the Attendee is invalid, raise an error.
+        :return:
+        """
+        if self._attendee is None:
+            # Raise the caller's name as the source of the error.
+            raise RuntimeError("{}: Not in a meeting".format(
+                inspect.stack()[1].function))
+        return self._attendee.queue
+
+    def _wait_for_others_to_reach_state(
+            self, desired_state: WorkerState = WorkerState.IDLE) -> bool:
+        start_time = time.time()
+
+
