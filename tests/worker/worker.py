@@ -136,7 +136,31 @@ class Worker(EnforceOverrides):
     def on_idle(self, payload) -> FuncAndData:
         while self._attendee and not self._attendee.queue:
             time.sleep(0.1)
-        return None
+        if self._attendee and self._attendee.queue:
+            return FuncAndData(self.on_message())
+
+    def on_message(self, fad: Optional[FuncAndData]
+                   ) -> Optional[FuncAndData]:
+        """
+        Process a message from the queue.
+        :param fad: The default FunctionAndData object
+        :return: The possibly changed FuncAndData object
+        """
+        if not self._attendee.queue:
+            # No items in the queue, use the default.
+            return fad
+
+        item = self._attendee.queue.get()
+        fad.data = item.payload
+
+        func_name = "on_{}".format(item.name)
+        new_func = getattr(self, func_name, None)
+        if callable(new_func):
+            fad.func = new_func
+        else:
+            fad.func = self.on_default
+            fad.data = (item.name, item.payload)
+        return fad
 
     def on_start(self, payload) -> FuncAndData:
         time_delay = random.uniform(0.5, 1.5)
@@ -161,11 +185,11 @@ class Worker(EnforceOverrides):
                         fad = FuncAndData(self.on_idle)
                     else:
                         fad = self._fad
-                    fad = self._process_queue_item(fad)
+                    fad = self.on_message(fad)
                     if fad:
                         # Wrapper the function so it will transcribe
                         # that it started/stopped.  Then call it.
-                        func = transcribe_func(fad.func)
+                        func = transcribe_func(self, fad.func)
                         self._fad = func(fad.data)
                     else:
                         self._fad = None
@@ -213,26 +237,3 @@ class Worker(EnforceOverrides):
             raise ValueError("Invalid item type({} != {}".format(
                 type(item), self._Message))
         self._attendee.note(item.value, payload)
-
-    def _process_queue_item(self, fad: Optional[FuncAndData]
-                            ) -> Optional[FuncAndData]:
-        """
-        Process a message from the queue.
-        :param fad: The default FunctionAndData object
-        :return: The possibly changed FuncAndData object
-        """
-        if not self._attendee.queue:
-            # No items in the queue, use the default.
-            return fad
-
-        item = self._attendee.queue.get()
-        fad.data = item.payload
-
-        func_name = "on_{}".format(item.name)
-        new_func = getattr(self, func_name, None)
-        if callable(new_func):
-            fad.func = new_func
-        else:
-            fad.func = self.on_default
-            fad.data = (item.name, item.payload)
-        return fad

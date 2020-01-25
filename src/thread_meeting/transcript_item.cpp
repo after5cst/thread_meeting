@@ -33,7 +33,7 @@ void TranscriptItem::bind(pybind11::module &m) {
 
             pybind11::dict timestamp_info;
             timestamp_info["name"] = "timestamp";
-            timestamp_info["tt_dtype"] = "f";
+            timestamp_info["tt_dtype"] = "daystamp";
             timestamp_info["desc"] = "seconds since epoch";
             fields.append(timestamp_info);
 
