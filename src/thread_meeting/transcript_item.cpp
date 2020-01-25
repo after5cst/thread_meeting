@@ -26,9 +26,9 @@ void TranscriptItem::bind(pybind11::module &m) {
       // fields to describe object.
 
       .def_property_readonly_static(
-          "_log_version", [](pybind11::object /* self */) { return 1.0; })
+          "oas_version", [](pybind11::object /* self */) { return 1.0; })
       .def_property_readonly_static(
-          "_log_fields", [](pybind11::object /* self */) {
+          "oas_fields", [](pybind11::object /* self */) {
             pybind11::list fields;
 
             pybind11::dict timestamp_info;

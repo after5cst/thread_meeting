@@ -4,8 +4,14 @@ import importlib
 import json
 import pathlib
 import tempfile
-import texttable
 import unittest
+
+try:
+    import texttable
+    _TEXTTABLE_AVAILABLE = True
+except ImportError:
+    _TEXTTABLE_AVAILABLE = False
+
 
 if __name__ == '__main__':
     from worker import Worker
@@ -26,7 +32,7 @@ def fullname(o):
     return module + '.' + o.__class__.__name__
 
 
-#taken from https://stackoverflow.com/questions/18857352/python-remove-very-last-character-in-file
+# taken from https://stackoverflow.com/questions/18857352/python-remove-very-last-character-in-file
 def truncate_utf8_chars(filename, count, ignore_newlines=True) -> str:
     """
     Truncates last `count` characters of a text file encoded in UTF-8.
@@ -68,8 +74,8 @@ def write_data(data, dir_name) -> pathlib.Path:
     :param dir_name: The directory where the file should exist.
     :return: The path to the file that was written.
     """
-    version = data._log_version
-    fields = data._log_fields
+    version = data.oas_version
+    fields = data.oas_fields
     class_name = str(type(data).__name__)
 
     # Get the last piece of the class name.
@@ -128,11 +134,14 @@ def show_file_as_table(path: pathlib.Path):
     class_path = '.'.join(class_items[:-1])
     module = importlib.import_module(class_path)
     class_object = getattr(module, class_name)
-    class_version = class_object._log_version
+    class_version = class_object.oas_version
     if class_version != overview["version"]:
         raise RuntimeError("File import version mismatch: {} != {}".format(
             class_version, overview["version"]))
 
+    if not _TEXTTABLE_AVAILABLE:
+        print("texttable not installed, no printing avaialable.")
+        return
     table = texttable.Texttable()
 
     # Set data types for each column.
@@ -150,7 +159,7 @@ def show_file_as_table(path: pathlib.Path):
         formats = texttable.Texttable
         table.set_deco(formats.HEADER | formats.BORDER | formats.VLINES)
 
-    fields = class_object._log_fields
+    fields = class_object.oas_fields
     printed = False
     table.header([item['name'] for item in header])
     for row in data:
@@ -165,7 +174,6 @@ def show_file_as_table(path: pathlib.Path):
             row_data.append(temp)
         table.add_row(row_data)
     print(table.draw())
-
 
 
 class BatonTest(unittest.TestCase):
