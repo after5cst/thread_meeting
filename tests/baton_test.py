@@ -20,9 +20,9 @@ class BatonTest(unittest.TestCase):
 
     def test_can_send_message_to_worker(self):
         queue = None
-        workers = [IdleUntilQuit(), TimedQuit(5)]
         try:
             with transcriber() as transcript:
+                workers = [IdleUntilQuit(), TimedQuit(5)]
                 queue = transcript  # Keep transcript from losing scope.
                 Worker.execute_meeting(*workers)
                 # If we get here, then we managed to start the workers,

@@ -1,5 +1,8 @@
-from .worker import Worker, WorkerState
+from .worker import FuncAndData, Worker, WorkerState
 from .message import Message
+
+from overrides import overrides
+from typing import Optional
 
 
 class TimedQuit(Worker):
@@ -35,3 +38,4 @@ class TimedQuit(Worker):
         # ensure that the message is not dropped by having
         # a message in the queue.
         self._post_to_self(item=my_message)
+        return self.on_message

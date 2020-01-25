@@ -95,11 +95,37 @@ class Worker(EnforceOverrides):
         self._state = None
         self._attendee = None
         self._fad = None
+
+        # Base class methods without an override don't log enter/exit.
+        self._no_transcript_for = list()
+        for method in [self.on_message, self.on_default, self.on_idle,
+                       self.on_quit]:
+            self._no_transcript_without_override(method)
+
         self._Message = enum_class
         self._wake_from_idle_after = dict()
 
         self.meeting_members = list()
         self.timeout = 60  # Expect to respond within 60 seconds.
+
+    def _no_transcript_without_override(self, method):
+        """
+        Add the method to _no_transcript_for if it isn't overridden.
+        :param method: The method to test.
+        :return: None
+        """
+        method_name = method.__name__
+        # Now, walk down the class stack to see if this method changes.
+        class_method = getattr(self.__class__.mro()[0], method_name, None)
+        for base_class in self.__class__.mro()[1:]:
+            method_base = getattr(base_class, method_name, None)
+            if method_base is not None and method_base != class_method:
+                # The method changed: there is an override.
+                return
+
+        # If we reached here, then this base method is not overridden,
+        # so we don't need an auto transcript.
+        self._no_transcript_for.append(method)
 
     @property
     def name(self) -> Optional[str]:
@@ -211,7 +237,7 @@ class Worker(EnforceOverrides):
 
                     # Don't log enter/exit for on_message, but do for
                     # everything else.
-                    if self._fad.func == self.on_message:
+                    if self._fad.func in self._no_transcript_for:
                         func = self._fad.func
                     else:
                         func = transcribe_func(self, self._fad.func)
