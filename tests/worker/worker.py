@@ -54,29 +54,27 @@ class Worker(EnforceOverrides):
                     # Should NEVER happen!
                     raise RuntimeError("Could not get starting baton!")
 
+                futures = list()
                 for worker in workers:
+                    # Start the worker
                     worker.meeting_members = workers
-                # Start all workers.
-                futures = [executor.submit(worker.thread_entry)
-                           for worker in args]
+                    futures.append(executor.submit(worker.thread_entry))
 
-                # Wait for all workers to hit IDLE.
-                ready = False
-                for i in range(20):
-                    states = [worker.state for worker in args]
-                    if states.count(WorkerState.IDLE) == len(args):
-                        ready = True
-                        break
-                    time.sleep(0.3)
+                    # Wait for the worker to hit IDLE.
+                    for i in range(30):
+                        state = worker.state
+                        if state == WorkerState.IDLE:
+                            break
+                        time.sleep(0.3)
 
-                if not ready:
-                    # If initialization takes more than 6 seconds, assume
-                    # something is wrong.  Ask the living ones to quit,
-                    # and then kill the zombies.
-                    baton.post(Message.QUIT.value, None)
-                    time.sleep(10)
-                    kill_executor(executor)
-                    raise RuntimeError("Worker(s) failed to reach IDLE state")
+                    if not WorkerState.IDLE == state:
+                        # If initialization takes more than 9 seconds, assume
+                        # something is wrong.  Ask the living ones to quit,
+                        # and then kill the zombies.
+                        baton.post(Message.QUIT.value, None)
+                        time.sleep(10)
+                        kill_executor(executor)
+                        raise RuntimeError("Worker failed to reach IDLE state")
 
                 baton.post(Message.START.value, None)  # OK, let's go!
             # Now nothing to do but wait for the end.
@@ -220,7 +218,6 @@ class Worker(EnforceOverrides):
         return None
 
     # PUBLIC METHODS
-    @final
     def thread_entry(self):
         """
         Thread entry point launched by start_all for each worker.
@@ -233,10 +230,12 @@ class Worker(EnforceOverrides):
                     # then add them (to the back).
                     self._check_for_delayed_messages()
 
+                    # We're going to expand data as kwargs, so it must be
+                    # in dict format... even if there's nothing in it.
                     data = self._fad.data if self._fad.data else dict()
 
-                    # Don't log enter/exit for on_message, but do for
-                    # everything else.
+                    # Don't log enter/exit for on_* functions in the base class
+                    # if they are not overloaded, but do for everything else.
                     if self._fad.func in self._no_transcript_for:
                         func = self._fad.func
                     else:
@@ -348,8 +347,8 @@ class Worker(EnforceOverrides):
 
             while wait_until:
                 now = time.time()
-                for worker in [worker for worker in wait_until
-                               if worker.state in target_states]:
+                for worker in [item for item in wait_until
+                               if item.state in target_states]:
                     del wait_until[worker]
                 for worker, timeout in wait_until.items():
                     if timeout < now:
