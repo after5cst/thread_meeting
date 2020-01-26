@@ -1,5 +1,6 @@
 #include "attendee.h"
 #include "baton_scope.h"
+#include "interruptable_scope.h"
 
 #include <memory>
 
@@ -14,7 +15,10 @@ void Attendee::bind(pybind11::module &m) {
       .def_property_readonly(
           "queue", [](const Attendee &a) { return pybind11::cast(a.queue); })
       .def("__bool__", [](const Attendee &a) { return a.valid; })
+      .def("interrupt_with", &Attendee::create_iterruptable_scope)
       .def("request_baton", &Attendee::request_baton);
+
+  pybind11::register_exception<WakeAttendee>(m, "WakeAttendee");
 }
 
 void Attendee::add_to_queue(Take::pointer_t take) {
@@ -23,6 +27,10 @@ void Attendee::add_to_queue(Take::pointer_t take) {
       (thread_id == m_thread_id) ? TranscriptType::note : TranscriptType::post;
   transcribe(take->name, trans_type, m_thread_id);
   queue->push(pybind11::cast(take));
+  if (!(thread_id == m_thread_id || m_interruptables.empty())) {
+    auto top = m_interruptables.top();
+    PyThreadState_SetAsyncExc(m_thread_id, top.ptr());
+  }
 }
 
 std::unique_ptr<Keep> Attendee::note(std::string name,
@@ -31,6 +39,11 @@ std::unique_ptr<Keep> Attendee::note(std::string name,
   auto take = keep->create_take();
   add_to_queue(take);
   return keep;
+}
+
+std::unique_ptr<EnterExit>
+Attendee::create_iterruptable_scope(pybind11::object obj) {
+  return std::make_unique<InterruptableScope>(shared_from_this(), obj);
 }
 
 std::unique_ptr<EnterExit> Attendee::request_baton() {
