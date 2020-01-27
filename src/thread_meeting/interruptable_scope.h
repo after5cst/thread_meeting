@@ -9,7 +9,7 @@ class InterruptableScope : public EnterExitImpl<Attendee> {
 public:
   InterruptableScope(Attendee::pointer_t creator,
                      pybind11::object exception_class)
-      : m_creator(creator), m_exception_class(exception_class), baseclass() {}
+      : baseclass(), m_creator(creator), m_exception_class(exception_class) {}
 
   virtual pointer_t set_target() override;
   virtual void clear_target(pointer_t &target) override;

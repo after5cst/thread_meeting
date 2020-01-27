@@ -43,7 +43,7 @@ public:
 
 private:
   const thread_id_t m_thread_id = PyThread_get_thread_ident();
-  std::stack<pybind11::object> m_interruptables;
+  std::stack<pybind11::object> m_interruptables = std::stack<pybind11::object>();
 };
 
 #endif // ATTENDEE_H
