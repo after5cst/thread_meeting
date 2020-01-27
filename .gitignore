@@ -25,6 +25,7 @@ MANIFEST
 /*.ninja
 /docs/.build
 /docs/_build
+/docs/_generate
 *.py[co]
 *.egg-info
 *~

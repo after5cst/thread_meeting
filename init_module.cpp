@@ -20,10 +20,23 @@ PYBIND11_MODULE(thread_meeting, m) {
         .. autosummary::
            :toctree: _generate
 
-           attend
            Attendee
+           Baton
            Keep
+           PeekableQueue
            Take
+           TakeStatus
+           TranscriptItem
+           TranscriptType
+           WakeAttendee
+           _EnterExit
+
+           me
+           participate
+           starting_baton
+           transcribe
+           transcriber
+
     )pbdoc";
 
   bind_functions(m);

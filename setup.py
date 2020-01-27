@@ -46,7 +46,7 @@ class CMakeBuild(build_ext):
             build_args += ['--', '/m']
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-            build_args += ['--', '-j2']
+            build_args += ['--', '-j8']
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
@@ -58,7 +58,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='thread_meeting',
-    version='0.0.1',
+    version='0.1',
     author='Joe Marley',
     author_email='after5cst@gmail.com',
     description='Another thread messaging library',
