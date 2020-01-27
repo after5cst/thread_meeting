@@ -14,6 +14,7 @@ class TimedQuit(Worker):
         """
         super().__init__()
         self.delay_in_sec = wait_in_seconds
+        self.timeout = 2  # We should respond to messages in < 2 seconds.
 
     def on_start(self):
         """

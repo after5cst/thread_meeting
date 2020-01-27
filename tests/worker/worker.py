@@ -174,12 +174,8 @@ class Worker(EnforceOverrides):
         Wait for an item to be put in the queue.
         :return: The next function to be called.
         """
-        queue = self._queue()
-        while not queue:
-            # No items in the queue means we are still idle.
+        while self._no_messages():
             time.sleep(0.1)
-            self._check_for_delayed_messages()
-        # There's a message: we're no longer idle.
         return FuncAndData(self.on_message)
 
     def on_message(self) -> Optional[FuncAndData]:
@@ -298,6 +294,23 @@ class Worker(EnforceOverrides):
         thread_meeting.transcribe(message,
                                   ti_type=thread_meeting.TranscriptType.Debug)
 
+    def _no_messages(self) -> bool:
+        """
+        Return True if there are no messages waiting to be processed.
+        :return: True if queue is empty.
+        """
+        queue = self._queue()
+        if queue:
+            # There's a message!
+            return False
+
+        # No items in the queue means we are still idle.
+        self._check_for_delayed_messages()
+
+        # Now that we have given a chance for delayed messages to
+        # be added to the queue, return whether or not the queue is empty.
+        return not queue
+
     def _queue_message_after_delay(self, *, message: enum.Enum,
                                    delay_in_sec: float) -> None:
         """
@@ -316,8 +329,7 @@ class Worker(EnforceOverrides):
         ))
 
     def _post_to_others(self, item: enum.Enum, *, payload=None,
-                        target_state: Optional[WorkerState] = None
-                        ) -> bool:
+                        target_state: Optional[WorkerState] = None) -> bool:
         """
         Post a message to other workers.
 
@@ -326,7 +338,7 @@ class Worker(EnforceOverrides):
 
         :param item: The message to post.
         :param payload: The optional payload to post.
-        :param target_state: The state to wait for the other workers to reach.
+        :param target_state: The expected end state for the other workers.
         :return: True if message was posted.
         """
         if not isinstance(item, self._Message):

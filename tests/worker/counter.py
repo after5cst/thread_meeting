@@ -1,11 +1,10 @@
 from .worker import Worker
-from .decorators import interruptable
 
 
-class InterruptableCounter(Worker):
+class Counter(Worker):
     def __init__(self):
         """
-        A worker that counts while not interrupted.
+        A worker that counts and checks for messages.
         """
         super().__init__()
         self.count = 0
@@ -18,10 +17,8 @@ class InterruptableCounter(Worker):
         """
         return self.on_run
 
-    @interruptable
     def on_run(self):
-        try:
-            while True:
+        while self._no_messages():
+            for i in range(1000):
                 self.count += 1
-        finally:
-            self._debug("{}".format(self.count / 1000))
+        self._debug("{}".format(self.count / 1000))

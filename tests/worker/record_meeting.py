@@ -1,6 +1,13 @@
 from .message import Message
 from .worker import FuncAndData, Worker, WorkerState
-from ..utils.object_array_storage import ObjectArrayStorage
+try:
+    from ..utils.object_array_storage import ObjectArrayStorage
+except ValueError:
+    # If the unit tests were run from the command line, then
+    # the above gives an error:
+    #   ValueError: attempted relative import beyond top-level package
+    # This then retries assuming we're running from the tests directory.
+    from utils.object_array_storage import ObjectArrayStorage
 
 from thread_meeting import transcriber, TranscriptItem
 
@@ -20,6 +27,7 @@ class RecordMeeting(Worker):
         super().__init__()
         self.transcript = None
         self.oas = None
+        self.timeout = 2  # We should respond to messages in < 2 seconds.
 
     @overrides
     def on_idle(self) -> Optional[FuncAndData]:
