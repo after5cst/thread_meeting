@@ -20,7 +20,7 @@ def transcribe_func(state_object, func):
             meeting.transcribe(message, meeting.TranscriptType.Enter)
             result = func(*args, **kwargs)
         except Interruption:
-            meeting.transcribe("Interrupted!", meeting.TranscriptType.Custom)
+            meeting.transcribe("Interrupted", meeting.TranscriptType.Custom)
             result = None
         finally:
             meeting.transcribe(message, meeting.TranscriptType.Exit)

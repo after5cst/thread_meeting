@@ -1,14 +1,14 @@
 import thread_meeting
 
 import concurrent.futures
+import datetime
 import enum
 import inspect
-from overrides import EnforceOverrides, final  # , overrides
-import random
+from overrides import EnforceOverrides
 import time
 from typing import Optional
 
-from .decorators import transcribe_func
+from .decorators import transcribe_func, interruptable
 from .kill_executor import kill_executor
 from .message import Message
 from .worker_state import WorkerState
@@ -255,8 +255,13 @@ class Worker(EnforceOverrides):
                         # The callee returned exactly what we want.
                         self._fad = func_return
                     elif func_return is None:
-                        # No instructions.  Default to IDLE.
-                        self._fad = FuncAndData(self.on_idle)
+                        # No instructions.
+                        if self.state == WorkerState.FINAL:
+                            self._fad = None
+                        elif self.state == WorkerState.IDLE:
+                            self._fad = FuncAndData(self.on_idle)
+                        else:
+                            self._fad = FuncAndData(self.on_message)
                     else:
                         raise RuntimeError("Illegal return value from function")
 
@@ -305,6 +310,10 @@ class Worker(EnforceOverrides):
         while target_time in self._wake_from_idle_after:
             target_time += 1
         self._wake_from_idle_after[target_time] = message
+        self._debug("{}: Queued for delivery after {}".format(
+            message.value, datetime.datetime.fromtimestamp(
+            target_time).strftime('%H:%M:%S')
+        ))
 
     def _post_to_others(self, item: enum.Enum, *, payload=None,
                         target_state: Optional[WorkerState] = None

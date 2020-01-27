@@ -21,8 +21,8 @@ else:
 class BatonTest(unittest.TestCase):
 
     def test_can_send_message_to_worker(self):
-        workers = [RecordMeeting(), IdleUntilQuit(), TimedQuit(5),
-                   InterruptableCounter()]
+        workers = [RecordMeeting(), IdleUntilQuit(), IdleUntilQuit(),
+                   TimedQuit(5), InterruptableCounter()]
         try:
             Worker.execute_meeting(*workers)
             # If we get here, then we managed to start the workers,

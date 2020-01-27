@@ -26,5 +26,5 @@ class InterruptableCounter(Worker):
     def on_run(self):
         while True:
             self.count += 1
+            self._debug("{}".format(self.count))
             time.sleep(0.1)
-
