@@ -167,7 +167,7 @@ class ObjectArrayStorage:
         :return: The string.
         """
         return datetime.datetime.fromtimestamp(
-            time_since_epoch).strftime('%H:%M:%S.%f')[:-3]
+            time_since_epoch).strftime('%a %H:%M:%S.%f')[:-3]
 
     def _initialize_file(self) -> None:
         """

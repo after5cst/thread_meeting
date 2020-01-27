@@ -24,4 +24,4 @@ class InterruptableCounter(Worker):
             while True:
                 self.count += 1
         finally:
-            self._debug("{}".format(self.count / 1000))
+            self._debug("{}".format(int(self.count / 1000)))

@@ -21,4 +21,4 @@ class Counter(Worker):
         while self._no_messages():
             for i in range(1000):
                 self.count += 1
-        self._debug("{}".format(self.count / 1000))
+        self._debug("{}".format(int(self.count / 1000)))

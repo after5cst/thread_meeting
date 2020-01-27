@@ -58,21 +58,26 @@ class RecordMeeting(Worker):
         """
         with ObjectArrayStorage(TranscriptItem) as self.oas:
             with transcriber() as self.transcript:
-                try:
-                    super().thread_entry()
-                finally:
-                    # We're in the FINAL state already, but don't actually
-                    # exit the thread until all the other workers are also
-                    # in the FINAL state.
-                    previous = None
-                    still_working = [x.name for x in self.meeting_members
-                                     if x.state != WorkerState.FINAL]
-                    while still_working:
-                        if previous != still_working:
-                            self._debug("Still working: {}".format(
-                                ', '.join(still_working)))
-                            previous = still_working
-                        time.sleep(0.5)
-                        self.do_transcription()
-                        still_working = [x.name for x in self.meeting_members
-                                         if x.state != WorkerState.FINAL]
+                super().thread_entry()
+
+    @overrides
+    def on_quit(self) -> None:
+        super().on_quit()  # Mark ourselves as quit.
+        # But still hang around to log events until everyone else
+        # has quit.
+        previous = None
+        sleep_time = 0.25
+        still_working = [x.name for x in self.meeting_members
+                         if x.state != WorkerState.FINAL]
+        while still_working:
+            if previous != still_working:
+                self._debug("Waiting on: {}".format(
+                    ', '.join(still_working)))
+                previous = still_working
+            time.sleep(sleep_time)
+            if sleep_time < 60:
+                sleep_time *= 2
+            self.do_transcription()
+            still_working = [x.name for x in self.meeting_members
+                             if x.state != WorkerState.FINAL]
+
