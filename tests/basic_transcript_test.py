@@ -24,7 +24,6 @@ class BasicTranscriptTest(unittest.TestCase):
             self.assertTrue(arg.message in item.message,
                 "'{}' not in '{}'".format(arg.message, item.message)
                 )
-            self.assertEqual(arg.message, item.message)
         if transcriber:
             self.assertFalse(bool(transcriber), "Unexpected item '{}:{}'".format(
                 transcriber.head.ti_type, transcriber.head.message
@@ -72,10 +71,10 @@ class BasicTranscriptTest(unittest.TestCase):
                 pass
         expected = (
             TI('Transcript', TT.Enter),
-            TI('Bilbo', TT.Enter),
-            TI('Bilbo', TT.Exit),
-            TI('Baggins', TT.Enter),
-            TI('Baggins', TT.Exit),
+            TI('Thread ID:', TT.Enter),
+            TI('Thread ID:', TT.Exit),
+            TI('Thread ID:', TT.Enter),
+            TI('Thread ID:', TT.Exit),
             TI('Transcript', TT.Exit)
             )
         self.verify_transcript_items(transcriber, *expected)
@@ -87,10 +86,10 @@ class BasicTranscriptTest(unittest.TestCase):
                     pass
         expected = (
             TI('Transcript', TT.Enter),
-            TI('Bilbo', TT.Enter),
+            TI('Thread ID:', TT.Enter),
             TI('Baton', TT.Enter),
             TI('Baton', TT.Exit),
-            TI('Bilbo', TT.Exit),
+            TI('Thread ID:', TT.Exit),
             TI('Transcript', TT.Exit)
             )
         self.verify_transcript_items(transcriber, *expected)
@@ -105,10 +104,10 @@ class BasicTranscriptTest(unittest.TestCase):
                 in str(context.exception), str(context.exception))
         expected = (
             TI('Transcript', TT.Enter),
-            TI('Bilbo', TT.Enter),
+            TI('Thread ID:', TT.Enter),
             TI('Baton', TT.Enter),
             TI('Baton', TT.Exit),
-            TI('Bilbo', TT.Exit),
+            TI('Thread ID:', TT.Exit),
             TI('Transcript', TT.Exit)
             )
         self.verify_transcript_items(transcriber, *expected)
@@ -124,11 +123,11 @@ class BasicTranscriptTest(unittest.TestCase):
             # exit with scope here                           # EXIT Transcript
         expected = (
             TI('Transcript', TT.Enter),
-            TI('Bilbo', TT.Enter),
+            TI('Thread ID:', TT.Enter),
             TI('Ring', TT.Note),
             TI('Sword', TT.Note),
             TI('Ring', TT.Nack),
-            TI('Bilbo', TT.Exit),
+            TI('Thread ID:', TT.Exit),
             TI('Sword', TT.Ack),
             TI('Transcript', TT.Exit)
             )
