@@ -5,16 +5,62 @@
 #include <sstream>
 
 void Take::bind(pybind11::module &m) {
-  pybind11::class_<Take, Take::pointer_t>(m, "Take")
-      .def(pybind11::init<std::string, pybind11::object>())
-      .def_readonly("name", &Take::name)
-      .def_property_readonly("status", [](Take &a) { return *(a.status); })
-      .def("acknowledge", &Take::acknowledge)
-      .def_readonly("payload", &Take::payload)
-      .def("protest", &Take::protest)
-      .def("__repr__", [](const Take &a) {
-        return "<thread_meeting.Take '" + a.name + "'>";
-      });
+  pybind11::class_<Take, Take::pointer_t> o(m, "Take", R"pbdoc(
+A container that holds a name, a message, and a status.
+
+A Keep can create Take objects to send to other recipients, typically
+in other threads.  When the recipient marks the Take as Acknowledged or
+Protested, or the object goes out of scope, the Keep is notified.
+
+This allows the Keep holder to monitor what Takes are still Pending.
+)pbdoc");
+
+  o.def(pybind11::init<std::string, pybind11::object>(),
+        R"pbdoc(
+Initialization function.
+
+:param name: The name to be assigned to the Take
+:param payload: The optional payload object.
+)pbdoc",
+        pybind11::arg("name") = "",
+        pybind11::arg("payload") = pybind11::none());
+
+  o.def_readonly("name", &Take::name,
+                 R"pbdoc(
+The name passed to the Take during initialization.
+This attribute is read-only.
+)pbdoc");
+
+  o.def_property_readonly("status", [](Take &a) { return *(a.status); },
+                          R"pbdoc(
+The current status of the Keep.
+
+The status is set via the acknowledge() or protest() method calls.
+It may be only changed once.  The initial value is MessageStatus.Pending.
+
+This attribute is read-only.
+)pbdoc");
+
+  o.def("acknowledge", &Take::acknowledge, R"pbdoc(
+Set the status of the Take from Pending to Acknowledged.
+
+This attribute is read-only.
+)pbdoc");
+
+  o.def_readonly("payload", &Take::payload,
+                 R"pbdoc(
+The payload passed to the Take during initialization.
+This attribute is read-only.
+)pbdoc");
+
+  o.def("protest", &Take::protest, R"pbdoc(
+Set the status of the Take from Pending to Protested.
+
+This attribute is read-only.
+)pbdoc");
+
+  o.def("__repr__",
+        [](const Take &a) { return "<thread_meeting.Take '" + a.name + "'>"; });
 }
 
 void Take::set_status(MessageStatus new_status, bool throw_on_error) {

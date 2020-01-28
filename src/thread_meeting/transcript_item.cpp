@@ -6,55 +6,102 @@
 #include <sstream>
 
 void TranscriptItem::bind(pybind11::module &m) {
-  pybind11::class_<TranscriptItem, TranscriptItem::pointer_t>(m,
-                                                              "TranscriptItem")
-      .def(pybind11::init<std::string, TranscriptType>(),
-           pybind11::arg("message") = "",
-           pybind11::arg("ti_type") = TranscriptType::custom)
-      .def("__repr__",
-           [](const TranscriptItem &a) {
-             std::stringstream sstr;
-             sstr << "< " << a.source << " --[" << a.message << ","
-                  << as_string(a.ti_type) << "]--> " << a.destination << " >";
-             return sstr.str();
-           })
-      .def_readonly("source", &TranscriptItem::source)
-      .def_readonly("destination", &TranscriptItem::destination)
-      .def_readonly("message", &TranscriptItem::message)
-      .def_readonly("ti_type", &TranscriptItem::ti_type)
-      .def_readonly("timestamp", &TranscriptItem::timestamp)
-      // fields to describe object.
+  pybind11::class_<TranscriptItem, TranscriptItem::pointer_t> o(
+      m, "TranscriptItem", R"pbdoc(
+An item for the meeting transcript.
+)pbdoc");
 
-      .def_property_readonly_static(
-          "oas_version", [](pybind11::object /* self */) { return 1.0; })
-      .def_property_readonly_static(
-          "oas_fields", [](pybind11::object /* self */) {
-            pybind11::list fields;
+  o.def(pybind11::init<std::string, TranscriptType>(),
+        R"pbdoc(
+Initialization function.
 
-            pybind11::dict timestamp_info;
-            timestamp_info["name"] = "timestamp";
-            timestamp_info["tt_dtype"] = "daystamp";
-            timestamp_info["desc"] = "seconds since epoch";
-            fields.append(timestamp_info);
+:param message: The text message for the transcript.
+:param payload: The optional payload object.
+)pbdoc",
+        pybind11::arg("message") = "",
+        pybind11::arg("ti_type") = TranscriptType::custom);
 
-            pybind11::dict source_info;
-            source_info["name"] = "source";
-            fields.append(source_info);
+  o.def("__repr__", [](const TranscriptItem &a) {
+    std::stringstream sstr;
+    sstr << "< " << a.source << " --[" << a.message << ","
+         << as_string(a.ti_type) << "]--> " << a.destination << " >";
+    return sstr.str();
+  });
 
-            pybind11::dict ti_type_info;
-            ti_type_info["name"] = "ti_type";
-            fields.append(ti_type_info);
+  o.def_readonly("source", &TranscriptItem::source,
+                 R"pbdoc(
+The originator of the item.
+This attribute is read-only.
+)pbdoc");
 
-            pybind11::dict message_info;
-            message_info["name"] = "message";
-            fields.append(message_info);
+  o.def_readonly("destination", &TranscriptItem::destination,
+                 R"pbdoc(
+The expected destination of the item, if any.
+This attribute is read-only.
+)pbdoc");
 
-            pybind11::dict destination_info;
-            destination_info["name"] = "destination";
-            fields.append(destination_info);
+  o.def_readonly("message", &TranscriptItem::message,
+                 R"pbdoc(
+The message text.
+This attribute is read-only.
+)pbdoc");
 
-            return pybind11::tuple(fields);
-          });
+  o.def_readonly("ti_type", &TranscriptItem::ti_type,
+                 R"pbdoc(
+The type of the item.  This will be an enumeration of TranscriptType.
+This attribute is read-only.
+)pbdoc");
+
+  o.def_readonly("timestamp", &TranscriptItem::timestamp,
+                 R"pbdoc(
+The timestamp when the item was created.
+This attribute is read-only.
+)pbdoc");
+
+  // fields to describe object.
+
+  o.def_property_readonly_static(
+      "oas_version", [](pybind11::object /* self */) { return 1.0; },
+      R"pbdoc(
+A version number for this structure.
+If fields are added/removed/changed, the version number should change.
+This attribute is a static member of the class.
+)pbdoc");
+
+  o.def_property_readonly_static("oas_fields",
+                                 [](pybind11::object /* self */) {
+                                   pybind11::list fields;
+
+                                   pybind11::dict timestamp_info;
+                                   timestamp_info["name"] = "timestamp";
+                                   timestamp_info["tt_dtype"] = "daystamp";
+                                   timestamp_info["desc"] =
+                                       "seconds since epoch";
+                                   fields.append(timestamp_info);
+
+                                   pybind11::dict source_info;
+                                   source_info["name"] = "source";
+                                   fields.append(source_info);
+
+                                   pybind11::dict ti_type_info;
+                                   ti_type_info["name"] = "ti_type";
+                                   fields.append(ti_type_info);
+
+                                   pybind11::dict message_info;
+                                   message_info["name"] = "message";
+                                   fields.append(message_info);
+
+                                   pybind11::dict destination_info;
+                                   destination_info["name"] = "destination";
+                                   fields.append(destination_info);
+
+                                   return pybind11::tuple(fields);
+                                 },
+                                 R"pbdoc(
+A dictionary defining the fields and data types in the structure.
+If this changes, oas_version should also change.
+This attribute is a static member of the class.
+)pbdoc");
 }
 
 TranscriptItem::TranscriptItem(std::string message_in,
