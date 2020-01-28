@@ -33,18 +33,73 @@ to make it unique.
 This attribute is read-only.
 )pbdoc");
 
-  o.def("note", &Attendee::note);
+  o.def("note", &Attendee::note, R"pbdoc(
+Put in item in the Attendee queue from the Attendee's thread.
+
+An exception is raised if the note is attempted to be placed
+from any other thread.  To post messages across all workers,
+the caller must use the Baton from request_baton().
+
+:param message: A string describing the note.
+:param payload: An optional object passed with the note.  Not commonly used.
+
+:return: The Keep object associated with the posted note.
+)pbdoc",
+        pybind11::arg("message"), pybind11::arg("payload") = pybind11::none());
 
   o.def_property_readonly(
-      "queue", [](const Attendee &a) { return pybind11::cast(a.queue); });
+      "queue", [](const Attendee &a) { return pybind11::cast(a.queue); },
+      R"pbdoc(
+The PeekableQueue for the Attendee.
 
-  o.def("__bool__", [](const Attendee &a) { return a.valid; });
+The queue contains messages sent to the Attendee either via the note()
+method (within the Attendee's thread) or the Baton.post() method (from
+other threads).  Items cannot be directly added to the queue via its
+append() method.
 
-  o.def("interrupt_with", &Attendee::create_iterruptable_scope);
+:param message: A string describing the note.
+:param payload: An optional object passed with the note.  Not commonly used.
+
+:return: The Keep object associated with the posted note.
+
+This attribute is read-only.
+)pbdoc");
+
+  o.def(
+      "__bool__", [](const Attendee &a) { return a.valid; },
+      R"pbdoc(
+Returns True if the Attendee is valid, False otherwise.
+
+An Attendee is considered valid if it is still within the scope
+of the ContextManager that created it.  The package function
+participate() provides the ContextManager.
+
+This attribute is read-only.
+)pbdoc");
+
+  o.def("interrupt_with", &Attendee::create_iterruptable_scope,
+        R"pbdoc(
+Returns a Context Manager that provides scoping for interrupts.
+
+When an Attendee has messages placed in the queue from the Baton,
+the other thread may optionally raise an exception in the Attendee's
+thread to notify the Attendeee's thread immediately that its
+queue is not empty.
+
+Within the scope of the conxtext manager returned from the function,
+the Attendee is willing to have an exception raised of the specified
+class provided by the caller when an item is posted to its queue.
+
+The note() function will not raise an exception even in this case,
+as the caller is the Attendee thread itself and should be aware
+that the queue is not empty after the note() calll.
+
+:param exception_class: The exception class (not the exception object)
+    that should be instantiated and raised when a message is posted.
+)pbdoc",
+        pybind11::arg("exception_class"));
 
   o.def("request_baton", &Attendee::request_baton);
-
-  pybind11::register_exception<WakeAttendee>(m, "WakeAttendee");
 }
 
 void Attendee::add_to_queue(Take::pointer_t take) {
@@ -61,6 +116,7 @@ void Attendee::add_to_queue(Take::pointer_t take) {
 
 std::unique_ptr<Keep> Attendee::note(std::string name,
                                      pybind11::object payload) {
+  verify_python_thread_id(m_thread_id);
   auto keep = std::make_unique<Keep>(name, payload);
   auto take = keep->create_take();
   add_to_queue(take);

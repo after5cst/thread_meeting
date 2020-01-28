@@ -10,8 +10,6 @@
 #include "peekable_queue.h"
 #include "take.h"
 
-class WakeAttendee : public std::runtime_error {};
-
 class Attendee : public std::enable_shared_from_this<Attendee> {
 public:
   typedef std::shared_ptr<Attendee> pointer_t;
