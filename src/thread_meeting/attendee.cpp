@@ -5,18 +5,44 @@
 #include <memory>
 
 void Attendee::bind(pybind11::module &m) {
-  pybind11::class_<Attendee, Attendee::pointer_t>(m, "Attendee")
-      .def("__repr__",
-           [](const Attendee &a) {
-             return "<thread_Meeting.Attendee '" + a.name + "'>";
-           })
-      .def_readonly("name", &Attendee::name)
-      .def("note", &Attendee::note)
-      .def_property_readonly(
-          "queue", [](const Attendee &a) { return pybind11::cast(a.queue); })
-      .def("__bool__", [](const Attendee &a) { return a.valid; })
-      .def("interrupt_with", &Attendee::create_iterruptable_scope)
-      .def("request_baton", &Attendee::request_baton);
+  pybind11::class_<Attendee, Attendee::pointer_t> o(m, "Attendee", R"pbdoc(
+The object signifying a thread's participation in a meeting.
+
+An Attendee is specific to a particular thread, and is created through
+the context manager returned from a participate() call.
+
+While an Attendee is valid (during the scope of the participate() context
+manager), a reference to the Attendee object can also be retrieved through
+a call to the me() function.
+
+An Attendee can not be directly created from Python code without use of
+one of the above functions.
+)pbdoc");
+
+  o.def("__repr__", [](const Attendee &a) {
+    return "<thread_Meeting.Attendee '" + a.name + "'>";
+  });
+
+  o.def_readonly("name", &Attendee::name, R"pbdoc(
+The name of the Attendee.
+
+A name is requested by the creator in the particpate() function.
+If it is unique, it is used.  Otherwise, a number is appended
+to make it unique.
+
+This attribute is read-only.
+)pbdoc");
+
+  o.def("note", &Attendee::note);
+
+  o.def_property_readonly(
+      "queue", [](const Attendee &a) { return pybind11::cast(a.queue); });
+
+  o.def("__bool__", [](const Attendee &a) { return a.valid; });
+
+  o.def("interrupt_with", &Attendee::create_iterruptable_scope);
+
+  o.def("request_baton", &Attendee::request_baton);
 
   pybind11::register_exception<WakeAttendee>(m, "WakeAttendee");
 }

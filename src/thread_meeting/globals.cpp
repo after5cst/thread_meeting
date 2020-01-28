@@ -116,7 +116,7 @@ std::string verify_thread_name(std::string suggested_name, thread_id_t id) {
     } else {
       // The name was not unique: append a suffix and try again.
       std::stringstream sstr;
-      sstr << suggested_name << " " << i;
+      sstr << suggested_name << i;
       name = sstr.str();
     }
   }
