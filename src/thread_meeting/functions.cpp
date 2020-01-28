@@ -81,10 +81,74 @@ void bind_functions(pybind11::module &m) {
       .value(as_string(TranscriptType::state), TranscriptType::state,
              "Entry denotes a state change by owner");
 
-  m.def("participate", &participate, pybind11::arg("attendee_name") = "");
-  m.def("me", &me);
-  m.def("starting_baton", starting_baton);
-  m.def("transcribe", &python_transcribe, pybind11::arg("message"),
+  m.def("participate", &participate,
+        R"pbdoc(
+Create a Context Manager that provides an Attendee to the thread.
+
+Each thread may have one and only one Attendee.  When a thread
+calls participate, it is joined to the meeting with the provided name.
+
+While the thread is in the meeting, the Attendee may have items added
+to the queue that were placed there by itself or by another Attendee
+who has the Baton.
+
+:param attendee_name: The requested name of the attendee.  If the name
+    is a duplicate, a numeric suffix will be added to make it unique.
+
+:return: A Context Manager that will provide an Attendee on entry and
+    invalidate the attendee on exit.
+)pbdoc",
+        pybind11::arg("attendee_name") = "");
+
+  m.def("me", &me,
+        R"pbdoc(
+Return the Attendee already attached to this thread via participate().
+
+Each thread may have one and only one Attendee.  When this method is
+called, it will return the Attendee object associated with the calling
+thread.
+
+:return: The Attendee object.  If there is no Attendee object for
+         the thread, returns None.
+)pbdoc");
+
+  m.def("starting_baton", starting_baton,
+        R"pbdoc(
+Return the Baton object prior to any threads joining the meeting.
+
+In order for the main thread to send a message to start the meeting,
+this function returns the Baton object.  If there are any members
+already in the meeting, None is returned.
+
+:return: The Baton object.  If there is any Attendee in the
+         meeting, returns None.
+)pbdoc");
+
+  m.def("transcribe", &python_transcribe,
+        R"pbdoc(
+Add an entry to the Transcript.
+
+:param message: The string to add to the transcript in the
+        Message field.
+:param ti_type: The TranscriptType to add to the transcript
+        in the ti_type field.
+
+:return: The TranscriptItem added to the Transcript.
+)pbdoc",
+        pybind11::arg("message"),
         pybind11::arg("ti_type") = TranscriptType::custom);
-  m.def("transcriber", &transcriber);
+
+  m.def("transcriber", &transcriber,
+        R"pbdoc(
+Create a Context Manager that provides a Transcript to the thread.
+
+A Transcript receives any TranscriptItems placed for the meeting via
+the transcribe() function.
+
+This context manager provides a queue where every TranscriptItem
+will be placed for the life of the context manager.
+
+:return: A Context Manager that will provide the Transcript
+        for the meeting, which is a PeekableQueue.
+)pbdoc");
 }
