@@ -51,22 +51,35 @@ pybind11::object transcribe(std::string message, TranscriptType transcript_type,
 
 void bind_functions(pybind11::module &m) {
   pybind11::enum_<MessageStatus>(m, "TakeStatus", pybind11::arithmetic())
-      .value(as_string(MessageStatus::pending), MessageStatus::pending)
+      .value(as_string(MessageStatus::pending), MessageStatus::pending,
+             "Message has not been picked up by queue owner")
       .value(as_string(MessageStatus::acknowledged),
-             MessageStatus::acknowledged)
-      .value(as_string(MessageStatus::protested), MessageStatus::protested);
+             MessageStatus::acknowledged,
+             "Message was picked up by queue owner and was not protested")
+      .value(as_string(MessageStatus::protested), MessageStatus::protested,
+             "Message was picked up by queue owner and owner protested");
 
   pybind11::enum_<TranscriptType>(m, "TranscriptType", pybind11::arithmetic())
-      .value(as_string(TranscriptType::ack), TranscriptType::ack)
-      .value(as_string(TranscriptType::custom), TranscriptType::custom)
-      .value(as_string(TranscriptType::debug), TranscriptType::debug)
-      .value(as_string(TranscriptType::enter), TranscriptType::enter)
-      .value(as_string(TranscriptType::exit), TranscriptType::exit)
-      .value(as_string(TranscriptType::nack), TranscriptType::nack)
-      .value(as_string(TranscriptType::note), TranscriptType::note)
-      .value(as_string(TranscriptType::post), TranscriptType::post)
-      .value(as_string(TranscriptType::recv), TranscriptType::recv)
-      .value(as_string(TranscriptType::state), TranscriptType::state);
+      .value(as_string(TranscriptType::ack), TranscriptType::ack,
+             "Positive acknowledgement of entry")
+      .value(as_string(TranscriptType::custom), TranscriptType::custom,
+             "Entry is of unknown (script-generated) type")
+      .value(as_string(TranscriptType::debug), TranscriptType::debug,
+             "Entry is a debug message")
+      .value(as_string(TranscriptType::enter), TranscriptType::enter,
+             "Entry notes the start of element in message")
+      .value(as_string(TranscriptType::exit), TranscriptType::exit,
+             "Entry notes the end of element in message")
+      .value(as_string(TranscriptType::nack), TranscriptType::nack,
+             "Negative acknowledgement of entry")
+      .value(as_string(TranscriptType::note), TranscriptType::note,
+             "Entry notes queue item posted by the queue owner")
+      .value(as_string(TranscriptType::post), TranscriptType::post,
+             "Entry notes queue item posted by a non-queue owner")
+      .value(as_string(TranscriptType::recv), TranscriptType::recv,
+             "Entry has been received")
+      .value(as_string(TranscriptType::state), TranscriptType::state,
+             "Entry denotes a state change by owner");
 
   m.def("participate", &participate, pybind11::arg("attendee_name") = "");
   m.def("me", &me);
