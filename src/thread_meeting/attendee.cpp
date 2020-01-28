@@ -34,7 +34,7 @@ This attribute is read-only.
 )pbdoc");
 
   o.def("note", &Attendee::note, R"pbdoc(
-Put in item in the Attendee queue from the Attendee's thread.
+Put an item in the Attendee queue from the Attendee's thread.
 
 An exception is raised if the note is attempted to be placed
 from any other thread.  To post messages across all workers,
