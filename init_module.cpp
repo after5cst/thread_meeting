@@ -13,7 +13,7 @@
 PYBIND11_MODULE(thread_meeting, m) {
   m.doc() = R"pbdoc(
         thread_meeting plugin
-        -----------------------
+        **************************
 
         .. currentmodule:: thread_meeting
 
