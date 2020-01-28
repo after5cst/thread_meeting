@@ -98,8 +98,8 @@ std::string verify_thread_name(std::string suggested_name, thread_id_t id) {
     suggested_name = sstr.str();
   }
 
-  // Second pass: Try `suggested_name` (and then `suggested_name 1`,
-  //    `suggested_name 2`) until a unique name is found.
+  // Second pass: Try `suggested_name` (and then `suggested_name1`,
+  //    `suggested_name2`, ...) until a unique name is found.
   auto name = suggested_name;
   for (auto i = 1; i; ++i) {
     for (auto &info : g_attendees) {

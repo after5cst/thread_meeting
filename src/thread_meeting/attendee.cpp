@@ -65,9 +65,8 @@ append() method.
 This attribute is read-only.
 )pbdoc");
 
-  o.def(
-      "__bool__", [](const Attendee &a) { return a.valid; },
-      R"pbdoc(
+  o.def("__bool__", [](const Attendee &a) { return a.valid; },
+        R"pbdoc(
 Returns True if the Attendee is valid, False otherwise.
 
 An Attendee is considered valid if it is still within the scope
@@ -99,7 +98,20 @@ that the queue is not empty after the note() calll.
 )pbdoc",
         pybind11::arg("exception_class"));
 
-  o.def("request_baton", &Attendee::request_baton);
+  o.def("request_baton", &Attendee::request_baton,
+        R"pbdoc(
+Try to get the Baton so the caller can post messages to other queues.
+
+The Baton is an object that can only be held by a single thread at a time.
+While the Baton is held, the thread can use it to post messages to other
+Attendee's queues.
+
+This function returns a Context Manager that provides the Baton for the
+duration of the scop if the Baton is available.  If the Baton is not available,
+the Context Manager will return None on __enter__.
+
+:returns: A Context Manager for the Baton object
+)pbdoc");
 }
 
 void Attendee::add_to_queue(Take::pointer_t take) {

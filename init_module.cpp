@@ -28,7 +28,6 @@ PYBIND11_MODULE(thread_meeting, m) {
            TakeStatus
            TranscriptItem
            TranscriptType
-           WakeAttendee
            _EnterExit
 
            me
