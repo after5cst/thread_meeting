@@ -59,6 +59,7 @@ class RecordMeeting(Worker):
         with ObjectArrayStorage(TranscriptItem) as self.oas:
             with transcriber() as self.transcript:
                 super().thread_entry()
+            self.do_transcription()
 
     @overrides
     def on_quit(self) -> None:
@@ -66,7 +67,7 @@ class RecordMeeting(Worker):
         # But still hang around to log events until everyone else
         # has quit.
         previous = None
-        sleep_time = 0.25
+        sleep_time = 1.0
         still_working = [x.name for x in self.meeting_members
                          if x.state != WorkerState.FINAL]
         while still_working:
@@ -75,9 +76,6 @@ class RecordMeeting(Worker):
                     ', '.join(still_working)))
                 previous = still_working
             time.sleep(sleep_time)
-            if sleep_time < 60:
-                sleep_time *= 2
             self.do_transcription()
             still_working = [x.name for x in self.meeting_members
                              if x.state != WorkerState.FINAL]
-

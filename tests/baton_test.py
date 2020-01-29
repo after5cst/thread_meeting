@@ -43,7 +43,7 @@ class BatonTest(unittest.TestCase):
             print('oas_path={}'.format(oas.path))
             if oas.path.is_file():
                 print(oas)
-                oas.path.unlink()
+                # oas.path.unlink()
 
 
 if __name__ == '__main__':

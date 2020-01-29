@@ -4,6 +4,7 @@ import concurrent.futures
 import datetime
 import enum
 import inspect
+import os
 from overrides import EnforceOverrides
 import time
 from typing import Optional
@@ -71,19 +72,19 @@ class Worker(EnforceOverrides):
                         # If initialization takes more than 9 seconds, assume
                         # something is wrong.  Ask the living ones to quit,
                         # and then kill the zombies.
+                        thread_meeting.transcribe(
+                            "Killing app: Workers did not initialize.")
                         baton.post(Message.QUIT.value, None)
-                        time.sleep(10)
-                        kill_executor(executor)
-                        raise RuntimeError("Worker failed to reach IDLE state")
+                        kill_executor()
 
                 baton.post(Message.START.value, None)  # OK, let's go!
             # Now nothing to do but wait for the end.
             for future in concurrent.futures.as_completed(futures):
                 try:
-                    state = future.result()
+                    future.result()
                 except BaseException as e:
-                    kill_executor(executor)
-                    raise RuntimeError("Worker failed") from e
+                    thread_meeting.transcribe("Killing app: {}".format(e))
+                    kill_executor()
 
     # CONSTRUCTOR AND PROPERTIES
     def __init__(self, *, name: str = '', enum_class: enum.Enum = Message):
@@ -153,8 +154,6 @@ class Worker(EnforceOverrides):
         return self._state
 
     # OVERRIDE-ABLE METHODS
-    def end_meeting(self):
-        pass
 
     def on_default(self, name, payload) -> FuncAndData:
         """
@@ -261,8 +260,8 @@ class Worker(EnforceOverrides):
                     else:
                         raise RuntimeError("Illegal return value from function")
 
-                except BaseException:
-                    self.end_meeting()
+                except BaseException as e:
+                    self._debug("Exception detected, thread FAILED")
                     raise
         return self.state
 
@@ -351,15 +350,22 @@ class Worker(EnforceOverrides):
                     ti_type=thread_meeting.TranscriptType.Debug)
                 return False
 
-            take = baton.post(item.value, payload)
+            keep = baton.post(item.value, payload)
             if target_state is None:
                 return True
+
+            # Wait until all messages have been at least acknowledged.
+            start_time = time.time()
+            end_time = start_time + max(
+                [x.timeout for x in self.meeting_members])
+            while keep.pending > 0 and time.time() < end_time:
+                time.sleep(1)
+
             # In case the thread has quit (so it won't respond), we need to
             # also check for the FINAL state.
-            target_states = set([WorkerState.FINAL, target_state])
+            target_states = {WorkerState.FINAL, target_state}
 
             # Wait for all other threads to acknowledge receiving the message.
-            start_time = time.time()
             wait_until = dict()
             for member in self.meeting_members:
                 if member == self:
@@ -373,7 +379,7 @@ class Worker(EnforceOverrides):
                     del wait_until[worker]
                 for worker, timeout in wait_until.items():
                     if timeout < now:
-                        raise TimeoutError(worker.name)
+                        raise TimeoutError(str(worker))
                 time.sleep(0.1)
         return True
 

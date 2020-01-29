@@ -2,6 +2,12 @@ import thread_meeting
 
 import ctypes
 import concurrent.futures
+import sys
+import time
+
+
+def thread_is_alive(thread):
+    return thread.is_alive if hasattr(thread, 'is_alive') else thread.isAlive
 
 
 def terminate_thread(thread):
@@ -10,8 +16,8 @@ def terminate_thread(thread):
     :param thread: a threading.Thread instance
     """
     # Use non-deprecated function if available.
-    living = thread.is_alive if hasattr(thread, 'is_alive') else thread.isAlive
-    if not living():
+
+    if not thread_is_alive():
         return
 
     exc = ctypes.py_object(SystemExit)
@@ -32,7 +38,16 @@ def kill_executor(executor: concurrent.futures.ThreadPoolExecutor) -> None:
     :return: None
     """
     executor.shutdown(wait=False)
+    need_to_die = False
+    time.sleep(5)
+
     for t in executor._threads:
+        terminate_thread(t)
         msg = "Killing thread {}".format(t.ident)
         thread_meeting.transcribe(msg)
-        terminate_thread(t)
+
+        if thread_is_alive(t):
+            need_to_die = True
+
+    if need_to_die:
+        sys._exit(-1)
