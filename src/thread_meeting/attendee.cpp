@@ -65,8 +65,9 @@ append() method.
 This attribute is read-only.
 )pbdoc");
 
-  o.def("__bool__", [](const Attendee &a) { return a.valid; },
-        R"pbdoc(
+  o.def(
+      "__bool__", [](const Attendee &a) { return a.valid; },
+      R"pbdoc(
 Returns True if the Attendee is valid, False otherwise.
 
 An Attendee is considered valid if it is still within the scope

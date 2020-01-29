@@ -32,7 +32,7 @@ PYBIND11_MODULE(thread_meeting, m) {
 
            me
            participate
-           starting_baton
+           primary_baton
            transcribe
            transcriber
 

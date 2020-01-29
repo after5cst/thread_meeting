@@ -8,10 +8,11 @@ std::unique_ptr<EnterExit> transcriber() {
   return std::make_unique<TranscriptScope>();
 }
 
-std::unique_ptr<EnterExit> starting_baton() {
-  // We only can create a starting baton if the room is empty
-  // (no attendees yet).
-  return std::make_unique<BatonScope>(g_attendees.size() == 0);
+pybind11::object primary_baton() {
+  if (PyThread_get_thread_ident() == g_initial_thread_id) {
+    return pybind11::cast(std::make_shared<Baton>());
+  }
+  return pybind11::none();
 }
 
 std::unique_ptr<EnterExit> participate(std::string attendee_name) {
@@ -112,16 +113,15 @@ thread.
          the thread, returns None.
 )pbdoc");
 
-  m.def("starting_baton", starting_baton,
+  m.def("primary_baton", primary_baton,
         R"pbdoc(
-Return the Baton object prior to any threads joining the meeting.
+Return the Baton object to the primary thread.
 
-In order for the main thread to send a message to start the meeting,
-this function returns the Baton object.  If there are any members
-already in the meeting, None is returned.
+In order for the primary thread to send a message to start the meeting,
+this function returns the Baton object.  Only the primary thread may
+take the starting baton.
 
-:return: The Baton object.  If there is any Attendee in the
-         meeting, returns None.
+:return: The Baton object or None.
 )pbdoc");
 
   m.def("transcribe", &python_transcribe,

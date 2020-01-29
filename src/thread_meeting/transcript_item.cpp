@@ -68,36 +68,36 @@ If fields are added/removed/changed, the version number should change.
 This attribute is a static member of the class.
 )pbdoc");
 
-  o.def_property_readonly_static("oas_fields",
-                                 [](pybind11::object /* self */) {
-                                   pybind11::list fields;
+  o.def_property_readonly_static(
+      "oas_fields",
+      [](pybind11::object /* self */) {
+        pybind11::list fields;
 
-                                   pybind11::dict timestamp_info;
-                                   timestamp_info["name"] = "timestamp";
-                                   timestamp_info["tt_dtype"] = "daystamp";
-                                   timestamp_info["desc"] =
-                                       "seconds since epoch";
-                                   fields.append(timestamp_info);
+        pybind11::dict timestamp_info;
+        timestamp_info["name"] = "timestamp";
+        timestamp_info["tt_dtype"] = "daystamp";
+        timestamp_info["desc"] = "seconds since epoch";
+        fields.append(timestamp_info);
 
-                                   pybind11::dict source_info;
-                                   source_info["name"] = "source";
-                                   fields.append(source_info);
+        pybind11::dict source_info;
+        source_info["name"] = "source";
+        fields.append(source_info);
 
-                                   pybind11::dict ti_type_info;
-                                   ti_type_info["name"] = "ti_type";
-                                   fields.append(ti_type_info);
+        pybind11::dict ti_type_info;
+        ti_type_info["name"] = "ti_type";
+        fields.append(ti_type_info);
 
-                                   pybind11::dict message_info;
-                                   message_info["name"] = "message";
-                                   fields.append(message_info);
+        pybind11::dict message_info;
+        message_info["name"] = "message";
+        fields.append(message_info);
 
-                                   pybind11::dict destination_info;
-                                   destination_info["name"] = "destination";
-                                   fields.append(destination_info);
+        pybind11::dict destination_info;
+        destination_info["name"] = "destination";
+        fields.append(destination_info);
 
-                                   return pybind11::tuple(fields);
-                                 },
-                                 R"pbdoc(
+        return pybind11::tuple(fields);
+      },
+      R"pbdoc(
 A dictionary defining the fields and data types in the structure.
 If this changes, oas_version should also change.
 This attribute is a static member of the class.

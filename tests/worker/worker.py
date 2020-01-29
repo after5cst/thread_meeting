@@ -4,9 +4,10 @@ import concurrent.futures
 import datetime
 import enum
 import inspect
-import os
 from overrides import EnforceOverrides
+import sys
 import time
+import traceback
 from typing import Optional
 
 from .decorators import transcribe_func, interruptable
@@ -50,41 +51,51 @@ class Worker(EnforceOverrides):
 
             # We MUST have the starting baton before creating workers,
             # otherwise they WILL keep us from getting it.
-            with thread_meeting.starting_baton() as baton:
-                if not baton:
-                    # Should NEVER happen!
-                    raise RuntimeError("Could not get starting baton!")
+            baton = thread_meeting.primary_baton()
+            if not baton:
+                # Should NEVER happen!
+                raise RuntimeError("Could not get starting baton!")
 
-                futures = list()
-                for worker in workers:
-                    # Start the worker
-                    worker.meeting_members = workers
-                    futures.append(executor.submit(worker.thread_entry))
+            futures = list()
+            workers_are_idle = True
+            for worker in workers:
+                # Start the worker
+                worker.meeting_members = workers
+                futures.append(executor.submit(worker.thread_entry))
 
-                    # Wait for the worker to hit IDLE.
-                    for i in range(30):
-                        state = worker.state
-                        if state == WorkerState.IDLE:
-                            break
-                        time.sleep(0.3)
+                # Wait for the worker to hit IDLE.
+                for i in range(30):
+                    state = worker.state
+                    if state == WorkerState.IDLE:
+                        break
+                    time.sleep(0.3)
 
-                    if not WorkerState.IDLE == state:
-                        # If initialization takes more than 9 seconds, assume
-                        # something is wrong.  Ask the living ones to quit,
-                        # and then kill the zombies.
-                        thread_meeting.transcribe(
-                            "Killing app: Workers did not initialize.")
-                        baton.post(Message.QUIT.value, None)
-                        kill_executor()
+                if not WorkerState.IDLE == state:
+                    # If initialization takes more than 9 seconds, assume
+                    # something is wrong.  The Worker has likely generated
+                    # an exception.  We will catch it below.
+                    workers_are_idle = False
+                    break
 
+            if workers_are_idle:
                 baton.post(Message.START.value, None)  # OK, let's go!
+
             # Now nothing to do but wait for the end.
             for future in concurrent.futures.as_completed(futures):
                 try:
                     future.result()
                 except BaseException as e:
+                    thread_meeting.transcribe(
+                        "Exception in primary thread")
+                    baton.post(Message.QUIT.value, None)
+                    raise
+                    exc_type, exc_value, exc_tb = sys.exc_info()
+                    tbe = traceback.TracebackException(
+                        exc_type, exc_value, exc_tb,
+                    )
+                    print(''.join(tbe.format()))
                     thread_meeting.transcribe("Killing app: {}".format(e))
-                    kill_executor()
+                    kill_executor(executor)
 
     # CONSTRUCTOR AND PROPERTIES
     def __init__(self, *, name: str = '', enum_class: enum.Enum = Message):

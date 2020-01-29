@@ -27,10 +27,16 @@ class RecordMeeting(Worker):
         super().__init__()
         self.transcript = None
         self.oas = None
+        self.path = None
+        self.meeting_started = False
         self.timeout = 2  # We should respond to messages in < 2 seconds.
 
+    def on_start(self):
+        self.meeting_started = True
+        return self.on_idle
+
     @overrides
-    def on_idle(self) -> Optional[FuncAndData]:
+    def on_idle(self):
         """
         Process transcript items while we wait for messages.
         This could also be done with a timer, but it really clutters
@@ -43,6 +49,9 @@ class RecordMeeting(Worker):
             time.sleep(0.5)
             self.do_transcription()
             self._check_for_delayed_messages()
+            if self.meeting_started and self._am_alone():
+                self._debug("Last one in meeting, leaving")
+                return self.on_quit
         # There's a message: we're no longer idle.
         return self.on_message
 
@@ -56,7 +65,8 @@ class RecordMeeting(Worker):
         Perform the thread functions within the context of a reporting
         scenario.
         """
-        with ObjectArrayStorage(TranscriptItem) as self.oas:
+        with ObjectArrayStorage(TranscriptItem, target=self.path) as self.oas:
+            self.path = self.oas.path
             with transcriber() as self.transcript:
                 super().thread_entry()
             self.do_transcription()
@@ -79,3 +89,14 @@ class RecordMeeting(Worker):
             self.do_transcription()
             still_working = [x.name for x in self.meeting_members
                              if x.state != WorkerState.FINAL]
+        self.meeting_started = False
+
+    def _am_alone(self) -> bool:
+        """
+        Check is this is the last worker.
+        :return: True if this is the last worker.
+        """
+        for worker in self.meeting_members:
+            if worker is not self and worker.state != WorkerState.FINAL:
+                return False
+        return True

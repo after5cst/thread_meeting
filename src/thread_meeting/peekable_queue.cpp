@@ -35,8 +35,9 @@ Pop an item off the queue and return it.
 :returns: The item, or None if the queue was empty.
 )pbdoc");
 
-  o.def("__bool__", [](const PeekableQueue &a) { return !a.empty(); },
-        R"pbdoc(
+  o.def(
+      "__bool__", [](const PeekableQueue &a) { return !a.empty(); },
+      R"pbdoc(
 Returns True if the queue is empty, False otherwise.
 This attribute is read-only.
 )pbdoc");
