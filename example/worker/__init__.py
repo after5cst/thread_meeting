@@ -1,4 +1,4 @@
-from example.worker.base.worker_state import WorkerState
+from .base.worker_state import WorkerState
 
 # functions
 from .execute_meeting import execute_meeting

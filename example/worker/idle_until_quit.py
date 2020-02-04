@@ -1,4 +1,4 @@
-from example.worker.base.worker import Worker
+from .base.worker import Worker
 
 
 class IdleUntilQuit(Worker):

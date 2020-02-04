@@ -1,5 +1,5 @@
-from example.worker.base.worker import Worker, WorkerState
-from example.worker.base.object_array_storage import ObjectArrayStorage
+from .base.worker import Worker, WorkerState
+from .base.object_array_storage import ObjectArrayStorage
 
 from thread_meeting import transcriber, TranscriptItem
 

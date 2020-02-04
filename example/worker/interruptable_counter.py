@@ -1,5 +1,5 @@
-from example.worker.base.worker import Worker
-from example.worker.base.decorators import interruptable
+from .base.worker import Worker
+from .base.decorators import interruptable
 
 
 class InterruptableCounter(Worker):

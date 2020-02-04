@@ -1,7 +1,7 @@
 import thread_meeting
 
-from example.worker.base.worker import Worker, WorkerState
-from example.worker.base.decorators import with_baton
+from .base.worker import Worker, WorkerState
+from .base.decorators import with_baton
 from .message import Message
 
 

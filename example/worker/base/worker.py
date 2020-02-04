@@ -8,7 +8,7 @@ import time
 from typing import Optional
 
 from .decorators import transcribe_func, with_baton
-from example.worker.message import Message
+from ..message import Message
 from .worker_state import WorkerState
 
 
