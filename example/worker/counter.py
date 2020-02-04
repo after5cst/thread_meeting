@@ -4,7 +4,7 @@ from example.worker.base.worker import Worker
 class Counter(Worker):
     def __init__(self):
         """
-        A worker that counts and checks for messages.
+        A worker that counts and manually checks for messages.
         """
         super().__init__()
         self.count = 0
@@ -19,6 +19,5 @@ class Counter(Worker):
 
     def on_run(self):
         while self._no_messages():
-            for i in range(1000):
-                self.count += 1
+            self.count += 1
         self._debug("{}".format(int(self.count / 1000)))

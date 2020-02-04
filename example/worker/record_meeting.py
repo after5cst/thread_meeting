@@ -1,12 +1,5 @@
 from example.worker.base.worker import Worker, WorkerState
-try:
-    from example.worker.base.object_array_storage import ObjectArrayStorage
-except ValueError:
-    # If the unit tests were run from the command line, then
-    # the above gives an error:
-    #   ValueError: attempted relative import beyond top-level package
-    # This then retries assuming we're running from the tests directory.
-    from utils.object_array_storage import ObjectArrayStorage
+from example.worker.base.object_array_storage import ObjectArrayStorage
 
 from thread_meeting import transcriber, TranscriptItem
 
@@ -26,12 +19,15 @@ class RecordMeeting(Worker):
         self.transcript = None
         self.oas = None
         self.path = None
-        self.meeting_started = False
+        self.meeting_in_progress = False
         self.timeout = 2  # We should respond to messages in < 2 seconds.
 
     def on_start(self):
-        self.meeting_started = True
-        return self.on_idle
+        """
+        Note that the meeting started.
+        :return: None.  The base class will default to on_idle.
+        """
+        self.meeting_in_progress = True
 
     @overrides
     def on_idle(self):
@@ -47,7 +43,7 @@ class RecordMeeting(Worker):
             time.sleep(0.5)
             self.do_transcription()
             self._check_for_delayed_messages()
-            if self.meeting_started and self._am_alone():
+            if self.meeting_in_progress and self._am_alone():
                 self._debug("Last one in meeting, leaving")
                 return self.on_quit
         # There's a message: we're no longer idle.
@@ -84,10 +80,10 @@ class RecordMeeting(Worker):
                     ', '.join(still_working)))
                 previous = still_working
             time.sleep(sleep_time)
-            self.do_transcription()
             still_working = [x.name for x in self.meeting_members
                              if x.state != WorkerState.FINAL]
-        self.meeting_started = False
+            self.do_transcription()
+        self.meeting_in_progress = False
 
     def _am_alone(self) -> bool:
         """

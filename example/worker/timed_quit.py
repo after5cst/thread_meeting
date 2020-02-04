@@ -11,22 +11,28 @@ class TimedQuit(Worker):
         """
         super().__init__()
         self.delay_in_sec = wait_in_seconds
-        self.timeout = 2  # We should respond to messages in < 2 seconds.
 
     def on_start(self):
         """
-        Go IDLE on start.
-        :return: The next function to run.
+        Set a timer to go off delay_in_sec seconds after start.
+        :return: None.
         """
         self._queue_message_after_delay(message=Message.TIMER,
                                         delay_in_sec=self.delay_in_sec)
-        return self.on_idle
 
     def on_timer(self):
         """
         Tell other workers to quit.
-        If this is successful,
-        :return:
+        In order to give instructions to the other workers, the _post_to_others
+        function must acquire the baton.
+
+        If it does, and posts the quit message to others, then post a message
+        to this worker to quit.
+
+        If it does not, then post another TIMER message to this worker so
+        we can try again.
+
+        :return: The on_message function.
         """
         my_message = Message.TIMER
         if self._post_to_others(Message.QUIT,

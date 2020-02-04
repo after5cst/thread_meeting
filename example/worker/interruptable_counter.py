@@ -13,8 +13,8 @@ class InterruptableCounter(Worker):
 
     def on_start(self):
         """
-        Go IDLE on start.
-        :return: The next function to run.
+        Process the start message.  We want to start running.
+        :return: The on_run method.
         """
         return self.on_run
 

@@ -7,7 +7,7 @@ from overrides import EnforceOverrides
 import time
 from typing import Optional
 
-from .decorators import transcribe_func, interruptable
+from .decorators import transcribe_func
 from example.worker.message import Message
 from .worker_state import WorkerState
 
@@ -85,7 +85,6 @@ class Worker(EnforceOverrides):
             new_state = WorkerState.IDLE
         else:
             new_state = WorkerState.BUSY
-        # TODO : WorkerState.WORK
 
         if new_state != self._state:
             thread_meeting.transcribe(new_state.value,
@@ -116,12 +115,11 @@ class Worker(EnforceOverrides):
         """
         while self._no_messages():
             time.sleep(0.1)
-        return FuncAndData(self.on_message)
+        return self.on_message
 
     def on_message(self) -> Optional[FuncAndData]:
         """
         Process a message from the queue.
-        :param kwargs:  Ignored.
         :return: The next function to be called.
         """
         queue = self._queue()
@@ -265,7 +263,7 @@ class Worker(EnforceOverrides):
         self._wake_from_idle_after[target_time] = message
         self._debug("{}: Queued for delivery after {}".format(
             message.value, datetime.datetime.fromtimestamp(
-            target_time).strftime('%H:%M:%S')
+                target_time).strftime('%H:%M:%S')
         ))
 
     def _post_to_others(self, item: enum.Enum, *, payload=None,

@@ -2,6 +2,7 @@ import thread_meeting as meeting
 
 
 class Interruption(Exception):
+    """Simple exception that notes the thread was interrupted."""
     pass
 
 

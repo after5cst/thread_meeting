@@ -4,7 +4,7 @@ from example.worker.base.worker import Worker
 class RaiseOnStart(Worker):
     def __init__(self):
         """
-        A worker that counts and checks for messages.
+        A worker that raises an uncaught exception in on_start.
         """
         super().__init__()
         self.count = 0

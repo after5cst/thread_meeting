@@ -47,8 +47,8 @@ def execute_meeting(*args) -> None:
                     # If initialization takes more than 9 seconds, assume
                     # something is wrong.  The Worker has likely generated
                     # an exception.  We will catch it below.
-                    workers_are_idle = False
-                    break
+                    raise RuntimeError(
+                        "Created worker did not reach IDLE state")
 
             if workers_are_idle:
                 baton.post(Message.START.value, None)  # OK, let's go!
