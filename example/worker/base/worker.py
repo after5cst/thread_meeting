@@ -7,7 +7,7 @@ from overrides import EnforceOverrides
 import time
 from typing import Optional
 
-from .decorators import transcribe_func
+from .decorators import transcribe_func, with_baton
 from example.worker.message import Message
 from .worker_state import WorkerState
 
@@ -266,8 +266,10 @@ class Worker(EnforceOverrides):
                 target_time).strftime('%H:%M:%S')
         ))
 
+    @with_baton
     def _post_to_others(self, item: enum.Enum, *, payload=None,
-                        target_state: Optional[WorkerState] = None) -> bool:
+                        target_state: Optional[WorkerState] = WorkerState.IDLE,
+                        baton: thread_meeting.Baton) -> bool:
         """
         Post a message to other workers.
 
@@ -282,44 +284,16 @@ class Worker(EnforceOverrides):
         if not isinstance(item, self._Message):
             raise ValueError("Invalid item type({} != {}".format(
                 type(item), self._Message))
-        with self._attendee.request_baton() as baton:
-            if baton is None:
-                thread_meeting.transcribe(
-                    "Failed to acquire baton",
-                    ti_type=thread_meeting.TranscriptType.Debug)
-                return False
 
-            keep = baton.post(item.value, payload)
-            if target_state is None:
-                return True
+        keep = baton.post(item.value, payload)
+        if target_state is None:
+            # If the user specifically chose not to wait for a
+            # target state, don't wait.  They're probably going
+            # to regret that decision, though.
+            return True
 
-            # Wait until all messages have been at least acknowledged.
-            start_time = time.time()
-            end_time = start_time + max(
-                [x.timeout for x in self.meeting_members])
-            while keep.pending > 0 and time.time() < end_time:
-                time.sleep(1)
-
-            # In case the thread has quit (so it won't respond), we need to
-            # also check for the FINAL state.
-            target_states = {WorkerState.FINAL, target_state}
-
-            # Wait for all other threads to acknowledge receiving the message.
-            wait_until = dict()
-            for member in self.meeting_members:
-                if member == self:
-                    continue
-                wait_until[member] = start_time + member.timeout
-
-            while wait_until:
-                now = time.time()
-                for worker in [item for item in wait_until
-                               if item.state in target_states]:
-                    del wait_until[worker]
-                for worker, timeout in wait_until.items():
-                    if timeout < now:
-                        raise TimeoutError(str(worker))
-                time.sleep(0.1)
+        self._wait_for_keep_acknowledgements(keep)
+        self._wait_for_workers_to_reach_state(target_state)
         return True
 
     def _post_to_self(self, item: enum.Enum, *, payload=None) -> None:
@@ -352,3 +326,49 @@ class Worker(EnforceOverrides):
             raise RuntimeError("{}: Not in a meeting".format(
                 inspect.stack()[1].function))
         return self._attendee.queue
+
+    def _wait_for_keep_acknowledgements(
+            self, keep: thread_meeting.Keep) -> bool:
+        """
+        Wait for other workers to ACK the message.
+        :param keep: The Keep returned by Baton.post
+        :return: True if the keep was acknowledge by all.
+        """
+        start_time = time.time()
+        end_time = start_time + max(
+            [x.timeout for x in self.meeting_members])
+        while keep.pending > 0 and time.time() < end_time:
+            time.sleep(1)
+        return keep.pending > 0
+
+    def _wait_for_workers_to_reach_state(
+            self, target_state: WorkerState) -> None:
+        """
+        Wait for all workers to reach the specified state.
+        This should NOT be called unless the caller has the Baton.
+        A Timeout error can be raised if the worker takes too long.
+        :param target_state: The desired target state.
+        :return: Noneß
+        """
+        start_time = time.time()
+
+        # In case the thread has quit (so it won't respond), we need to
+        # also check for the FINAL state.
+        target_states = {WorkerState.FINAL, target_state}
+
+        # Wait for all other threads to acknowledge receiving the message.
+        wait_until = dict()
+        for member in self.meeting_members:
+            if member == self:
+                continue
+            wait_until[member] = start_time + member.timeout
+
+        while wait_until:
+            now = time.time()
+            for worker in [item for item in wait_until
+                           if item.state in target_states]:
+                del wait_until[worker]
+            for worker, timeout in wait_until.items():
+                if timeout < now:
+                    raise TimeoutError(str(worker))
+            time.sleep(0.1)
