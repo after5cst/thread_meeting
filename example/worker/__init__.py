@@ -10,5 +10,6 @@ from .interruptable_counter import InterruptableCounter
 from .raise_on_start import RaiseOnStart
 from .record_meeting import RecordMeeting
 from .timed_quit import TimedQuit
+from .timed_idle_resume import TimedIdleResume
 
 # This package requires overrides to be installed from PIP.

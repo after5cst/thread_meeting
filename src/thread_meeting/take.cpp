@@ -31,9 +31,8 @@ The name passed to the Take during initialization.
 This attribute is read-only.
 )pbdoc");
 
-  o.def_property_readonly(
-      "status", [](Take &a) { return *(a.status); },
-      R"pbdoc(
+  o.def_property_readonly("status", [](Take &a) { return *(a.status); },
+                          R"pbdoc(
 The current status of the Keep.
 
 The status is set via the acknowledge() or protest() method calls.

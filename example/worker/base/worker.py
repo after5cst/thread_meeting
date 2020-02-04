@@ -99,8 +99,8 @@ class Worker(EnforceOverrides):
         """
         Process an unknown message.
         This method is called if the worker doesn't find an appropriate
-        function to call from the queue item.  The default behavior is to
-        ignore the item.
+        function to call from the queue message.  The default behavior is to
+        ignore the message.
         :param name: The name of the message.
         :param payload: The payload (if any) of the message.
         """
@@ -110,7 +110,7 @@ class Worker(EnforceOverrides):
 
     def on_idle(self) -> Optional[FuncAndData]:
         """
-        Wait for an item to be put in the queue.
+        Wait for an message to be put in the queue.
         :return: The next function to be called.
         """
         while self._no_messages():
@@ -190,12 +190,14 @@ class Worker(EnforceOverrides):
                         self._fad = func_return
                     elif func_return is None:
                         # No instructions.
-                        if self.state == WorkerState.FINAL:
+                        state = self.state
+                        if state == WorkerState.FINAL:
                             self._fad = None
-                        elif self.state == WorkerState.IDLE:
-                            self._fad = FuncAndData(self.on_idle)
-                        else:
+                        elif bool(self._queue()):
+                            # queue has items in it, we want to process next.
                             self._fad = FuncAndData(self.on_message)
+                        else:
+                            self._fad = FuncAndData(self.on_idle)
                     else:
                         raise RuntimeError("Illegal return value from function")
 
@@ -266,8 +268,8 @@ class Worker(EnforceOverrides):
                 target_time).strftime('%H:%M:%S')
         ))
 
-    @with_baton
-    def _post_to_others(self, item: enum.Enum, *, payload=None,
+    @with_baton()
+    def _post_to_others(self, *, message: enum.Enum, payload=None,
                         target_state: Optional[WorkerState] = WorkerState.IDLE,
                         baton: thread_meeting.Baton) -> bool:
         """
@@ -276,16 +278,16 @@ class Worker(EnforceOverrides):
         An exception will be raised if the item is not an instance
         of the self._Message class.
 
-        :param item: The message to post.
+        :param message: The message to post.
         :param payload: The optional payload to post.
         :param target_state: The expected end state for the other workers.
         :return: True if message was posted.
         """
-        if not isinstance(item, self._Message):
-            raise ValueError("Invalid item type({} != {}".format(
-                type(item), self._Message))
+        if not isinstance(message, self._Message):
+            raise ValueError("Invalid message type({} != {}".format(
+                type(message), self._Message))
 
-        keep = baton.post(item.value, payload)
+        keep = baton.post(message.value, payload)
         if target_state is None:
             # If the user specifically chose not to wait for a
             # target state, don't wait.  They're probably going
@@ -303,7 +305,7 @@ class Worker(EnforceOverrides):
         processed whenever this object gets around to running
         _process_queue_item.
 
-        An exception will be raised if the item is not an instance
+        An exception will be raised if the message is not an instance
         of the self._Message class.
 
         :param item: The message to post.
@@ -311,7 +313,7 @@ class Worker(EnforceOverrides):
         :return: None
         """
         if not isinstance(item, self._Message):
-            raise ValueError("Invalid item type({} != {}".format(
+            raise ValueError("Invalid message type({} != {}".format(
                 type(item), self._Message))
         self._attendee.note(item.value, payload)
 

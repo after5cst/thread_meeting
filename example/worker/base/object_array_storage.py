@@ -36,7 +36,7 @@ class ObjectArrayStorage:
 
     def append(self, item) -> None:
         """
-        Store the item.
+        Store the message.
         If this method is called outside of a context manager,
         an exception is raised.
 

@@ -15,9 +15,8 @@ A Baton can not be directly created from Python code without use of
 one of the above functions.
 )pbdoc");
 
-  o.def(
-      "__bool__", [](const Baton &a) { return a.valid(); },
-      R"pbdoc(
+  o.def("__bool__", [](const Baton &a) { return a.valid(); },
+        R"pbdoc(
 Returns True if the Baton is valid, False otherwise.
 
 An Baton is considered valid if it is still within the scope

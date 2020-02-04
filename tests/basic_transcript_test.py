@@ -25,7 +25,7 @@ class BasicTranscriptTest(unittest.TestCase):
                 "'{}' not in '{}'".format(arg.message, item.message)
                 )
         if transcriber:
-            self.assertFalse(bool(transcriber), "Unexpected item '{}:{}'".format(
+            self.assertFalse(bool(transcriber), "Unexpected message '{}:{}'".format(
                 transcriber.head.ti_type, transcriber.head.message
                 ))
     

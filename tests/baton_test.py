@@ -16,6 +16,7 @@ from example.worker import InterruptableCounter
 from example.worker import RaiseOnStart
 from example.worker import RecordMeeting
 from example.worker import TimedQuit
+from example.worker import TimedIdleResume
 
 
 class BatonTest(unittest.TestCase):
@@ -76,6 +77,21 @@ class BatonTest(unittest.TestCase):
             execute_meeting(*workers)
         self.assertTrue("I crashed (on purpose)"
                         in str(context.exception), str(context.exception))
+
+    def test_can_pause_and_resume_workers(self):
+        recorder = RecordMeeting()
+        workers = [
+            recorder,
+            IdleUntilQuit(),
+            TimedIdleResume(2,3),
+            TimedQuit(10)
+        ]
+        execute_meeting(*workers)
+        oas = recorder.oas
+        if oas and oas.path and oas.path.is_file():
+            print(oas)
+            oas.path.unlink()
+        self.assertTrue(False)
 
 
 if __name__ == '__main__':

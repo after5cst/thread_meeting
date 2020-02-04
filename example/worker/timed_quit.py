@@ -35,7 +35,7 @@ class TimedQuit(Worker):
         :return: The on_message function.
         """
         my_message = Message.TIMER
-        if self._post_to_others(Message.QUIT,
+        if self._post_to_others(message=Message.QUIT,
                                 target_state=WorkerState.FINAL):
             my_message = Message.QUIT
         # Post a message in our Queue.  This is done rather than

@@ -24,20 +24,21 @@ class TimedIdleResume(Worker):
         self._queue_message_after_delay(message=Message.TIMER,
                                         delay_in_sec=self.delay_in_sec)
 
-    @with_baton(no_baton=Message.TIMER)
-    def on_timer(self):
+    @with_baton(message=Message.TIMER)
+    def on_timer(self, *, baton, message, payload):
         """
         Control other workers.
 
         :return: The next function to run.
         """
-        my_message = Message.TIMER
-        if self._post_to_others(Message.QUIT,
-                                target_state=WorkerState.FINAL):
-            my_message = Message.QUIT
-        # Post a message in our Queue.  This is done rather than
-        # returning the next function to call because we want to
-        # ensure that the message is not dropped by having
-        # a message in the queue.
-        self._post_to_self(item=my_message)
-        return self.on_message
+        # my_message = Message.TIMER
+        # if self._post_to_others(Message.QUIT,
+        #                         target_state=WorkerState.FINAL):
+        #     my_message = Message.QUIT
+        # # Post a message in our Queue.  This is done rather than
+        # # returning the next function to call because we want to
+        # # ensure that the message is not dropped by having
+        # # a message in the queue.
+        # self._post_to_self(message=my_message)
+        # return self.on_message
+        pass
