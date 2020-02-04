@@ -62,11 +62,12 @@ class BatonTest(unittest.TestCase):
                 # So, we sent a message to the worker(s).
                 for worker in workers:
                     self.assertTrue(worker.state == WorkerState.FINAL)
-        finally:  # except BaseException:
+        except BaseException:
             oas = recorder.oas
             if oas and oas.path and oas.path.is_file():
                 print(oas)
                 oas.path.unlink()
+            raise
 
     def test_can_detect_worker_raise(self):
         recorder = RecordMeeting()

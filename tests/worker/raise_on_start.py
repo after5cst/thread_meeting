@@ -1,0 +1,17 @@
+from .worker import Worker
+
+
+class RaiseOnStart(Worker):
+    def __init__(self):
+        """
+        A worker that counts and checks for messages.
+        """
+        super().__init__()
+        self.count = 0
+        self.timeout = 2  # We should respond to messages in < 2 seconds.
+
+    def on_start(self):
+        """
+        Raise an exception.  Useful for unit testing.
+        """
+        raise RuntimeError("I crashed (on purpose)")
