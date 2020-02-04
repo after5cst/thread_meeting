@@ -1,25 +1,21 @@
+import pathlib
+import sys
 import unittest
 
+_THIS_DIR = pathlib.Path(__file__).parent
+
 if __name__ == '__main__':
-    from worker import Worker
-    from worker import WorkerState
-    # Worker-derived classes
-    from worker import Counter
-    from worker import IdleUntilQuit
-    from worker import InterruptableCounter
-    from worker import RaiseOnStart
-    from worker import RecordMeeting
-    from worker import TimedQuit
-else:
-    from .worker import Worker
-    from .worker import WorkerState
-    # Worker-derived classes
-    from .worker import Counter
-    from .worker import IdleUntilQuit
-    from .worker import InterruptableCounter
-    from .worker import RaiseOnStart
-    from .worker import RecordMeeting
-    from .worker import TimedQuit
+    sys.path.append(_THIS_DIR)
+
+from example.worker import Worker
+from example.worker import WorkerState
+# Worker-derived classes
+from example.worker import Counter
+from example.worker import IdleUntilQuit
+from example.worker import InterruptableCounter
+from example.worker import RaiseOnStart
+from example.worker import RecordMeeting
+from example.worker import TimedQuit
 
 
 class BatonTest(unittest.TestCase):

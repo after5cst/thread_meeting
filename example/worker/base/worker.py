@@ -12,7 +12,7 @@ from typing import Optional
 
 from .decorators import transcribe_func, interruptable
 from .kill_executor import kill_executor
-from .message import Message
+from example.worker.message import Message
 from .worker_state import WorkerState
 
 

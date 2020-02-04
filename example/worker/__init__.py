@@ -1,5 +1,5 @@
-from .worker import Worker
-from .worker_state import WorkerState
+from example.worker.base.worker import Worker
+from example.worker.base.worker_state import WorkerState
 
 # different Worker-based classes.
 from .counter import Counter

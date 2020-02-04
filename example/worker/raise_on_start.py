@@ -1,4 +1,4 @@
-from .worker import Worker
+from example.worker.base.worker import Worker
 
 
 class RaiseOnStart(Worker):

@@ -1,7 +1,6 @@
-from .message import Message
-from .worker import FuncAndData, Worker, WorkerState
+from example.worker.base.worker import Worker, WorkerState
 try:
-    from ..utils.object_array_storage import ObjectArrayStorage
+    from example.worker.base.object_array_storage import ObjectArrayStorage
 except ValueError:
     # If the unit tests were run from the command line, then
     # the above gives an error:
@@ -13,7 +12,6 @@ from thread_meeting import transcriber, TranscriptItem
 
 from overrides import overrides
 import time
-from typing import Optional
 
 
 class RecordMeeting(Worker):
