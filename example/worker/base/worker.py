@@ -105,7 +105,7 @@ class Worker(EnforceOverrides):
         :param payload: The payload (if any) of the message.
         """
         queue = self._queue()
-        self._debug("Ignoring '{}'".format(name))
+        # self._debug("Ignoring '{}'".format(name))
         return FuncAndData(self.on_message if queue else self.on_idle)
 
     def on_idle(self) -> Optional[FuncAndData]:
@@ -220,7 +220,7 @@ class Worker(EnforceOverrides):
         now = time.time()
         for key in keys:
             if key <= now:
-                self._post_to_self(item=self._wake_from_idle_after[key])
+                self._post_to_self(message=self._wake_from_idle_after[key])
                 del self._wake_from_idle_after[key]
             else:
                 break
@@ -268,37 +268,7 @@ class Worker(EnforceOverrides):
                 target_time).strftime('%H:%M:%S')
         ))
 
-    @with_baton()
-    def _post_to_others(self, *, message: enum.Enum, payload=None,
-                        target_state: Optional[WorkerState] = WorkerState.IDLE,
-                        baton: thread_meeting.Baton) -> bool:
-        """
-        Post a message to other workers.
-
-        An exception will be raised if the item is not an instance
-        of the self._Message class.
-
-        :param message: The message to post.
-        :param payload: The optional payload to post.
-        :param target_state: The expected end state for the other workers.
-        :return: True if message was posted.
-        """
-        if not isinstance(message, self._Message):
-            raise ValueError("Invalid message type({} != {}".format(
-                type(message), self._Message))
-
-        keep = baton.post(message.value, payload)
-        if target_state is None:
-            # If the user specifically chose not to wait for a
-            # target state, don't wait.  They're probably going
-            # to regret that decision, though.
-            return True
-
-        self._wait_for_keep_acknowledgements(keep)
-        self._wait_for_workers_to_reach_state(target_state)
-        return True
-
-    def _post_to_self(self, item: enum.Enum, *, payload=None) -> None:
+    def _post_to_self(self, message: enum.Enum, *, payload=None) -> None:
         """
         Post a message to our own queue.
         This message does not raise an exception and will be
@@ -308,14 +278,14 @@ class Worker(EnforceOverrides):
         An exception will be raised if the message is not an instance
         of the self._Message class.
 
-        :param item: The message to post.
+        :param message: The message to post.
         :param payload: The optional payload to post.
         :return: None
         """
-        if not isinstance(item, self._Message):
+        if not isinstance(message, self._Message):
             raise ValueError("Invalid message type({} != {}".format(
-                type(item), self._Message))
-        self._attendee.note(item.value, payload)
+                type(message), self._Message))
+        self._attendee.note(message.value, payload)
 
     def _queue(self) -> thread_meeting.PeekableQueue:
         """

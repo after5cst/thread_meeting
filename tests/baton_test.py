@@ -80,18 +80,21 @@ class BatonTest(unittest.TestCase):
 
     def test_can_pause_and_resume_workers(self):
         recorder = RecordMeeting()
+        timed_idle_resume = TimedIdleResume(0.5, 2)
         workers = [
             recorder,
-            IdleUntilQuit(),
-            TimedIdleResume(2,3),
-            TimedQuit(10)
+            timed_idle_resume,
+            InterruptableCounter()
         ]
-        execute_meeting(*workers)
-        oas = recorder.oas
-        if oas and oas.path and oas.path.is_file():
-            print(oas)
-            oas.path.unlink()
-        self.assertTrue(False)
+        try:
+            execute_meeting(*workers)
+            self.assertEqual(2, timed_idle_resume.resume_count)
+        except BaseException:
+            oas = recorder.oas
+            if oas and oas.path and oas.path.is_file():
+                print(oas)
+                oas.path.unlink()
+            raise
 
 
 if __name__ == '__main__':

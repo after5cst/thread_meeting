@@ -1,3 +1,5 @@
+import thread_meeting
+
 from example.worker.base.worker import Worker, WorkerState
 from example.worker.base.decorators import with_baton
 from .message import Message
@@ -25,20 +27,26 @@ class TimedIdleResume(Worker):
                                         delay_in_sec=self.delay_in_sec)
 
     @with_baton(message=Message.TIMER)
-    def on_timer(self, *, baton, message, payload):
-        """
-        Control other workers.
+    def on_timer(self, *, baton: thread_meeting.Baton) -> None:
 
-        :return: The next function to run.
-        """
-        # my_message = Message.TIMER
-        # if self._post_to_others(Message.QUIT,
-        #                         target_state=WorkerState.FINAL):
-        #     my_message = Message.QUIT
-        # # Post a message in our Queue.  This is done rather than
-        # # returning the next function to call because we want to
-        # # ensure that the message is not dropped by having
-        # # a message in the queue.
-        # self._post_to_self(message=my_message)
-        # return self.on_message
-        pass
+        if self.resume_count < self.max_resumes:
+            message = Message.GO_IDLE
+            expected_state = WorkerState.IDLE
+            self.resume_count += 1
+        else:
+            message = Message.QUIT
+            expected_state = WorkerState.FINAL
+
+        # Send message to others, and wait for them to reach expected state.
+        keep = baton.post(message.value)
+        self._wait_for_keep_acknowledgements(keep)
+        self._wait_for_workers_to_reach_state(expected_state)
+
+        if expected_state == WorkerState.IDLE:
+            # Everyone is IDLE, now start them again.
+            message = Message.START
+            keep = baton.post(message.value)
+            self._wait_for_keep_acknowledgements(keep)
+
+        # And give myself the same last message we sent out.
+        self._post_to_self(message=message)

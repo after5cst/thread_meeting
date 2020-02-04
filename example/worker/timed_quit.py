@@ -1,4 +1,6 @@
+import thread_meeting
 from example.worker.base.worker import Worker, WorkerState
+from example.worker.base.decorators import with_baton
 from .message import Message
 
 
@@ -20,7 +22,8 @@ class TimedQuit(Worker):
         self._queue_message_after_delay(message=Message.TIMER,
                                         delay_in_sec=self.delay_in_sec)
 
-    def on_timer(self):
+    @with_baton(message=Message.TIMER)
+    def on_timer(self, *, baton: thread_meeting.Baton):
         """
         Tell other workers to quit.
         In order to give instructions to the other workers, the _post_to_others
@@ -34,13 +37,12 @@ class TimedQuit(Worker):
 
         :return: The on_message function.
         """
-        my_message = Message.TIMER
-        if self._post_to_others(message=Message.QUIT,
-                                target_state=WorkerState.FINAL):
-            my_message = Message.QUIT
-        # Post a message in our Queue.  This is done rather than
-        # returning the next function to call because we want to
-        # ensure that the message is not dropped by having
-        # a message in the queue.
-        self._post_to_self(item=my_message)
-        return self.on_message
+        message = Message.QUIT
+        # Tell others to quit.
+        keep = baton.post(message.value)
+        # Wait for them to receive the message.
+        self._wait_for_keep_acknowledgements(keep)
+        # Wait for them to actually quit.
+        self._wait_for_workers_to_reach_state(WorkerState.FINAL)
+        # And tell myself to quit.
+        self._post_to_self(message=message)

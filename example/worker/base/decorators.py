@@ -1,4 +1,5 @@
 import functools
+import time
 from typing import Optional
 
 import thread_meeting as meeting
@@ -61,14 +62,11 @@ def with_baton(*, message: Optional[Message] = None, payload=None):
                         "Failed to acquire baton",
                         ti_type=meeting.TranscriptType.Debug)
                     if message is not None:
-                        attendee.note(message)
+                        time.sleep(0.1)
+                        attendee.note(message.value, payload)
                     return None
 
                 modified_kwargs = {k: v for k, v in kwargs.items()}
-                if 'message' not in modified_kwargs:
-                    modified_kwargs['message'] = message
-                if 'payload' not in modified_kwargs:
-                    modified_kwargs['payload'] = payload
                 result = func(*args, baton=baton, **modified_kwargs)
             return result
         return _wrapper
