@@ -1,5 +1,7 @@
-from example.worker.base.worker import Worker
 from example.worker.base.worker_state import WorkerState
+
+# functions
+from .execute_meeting import execute_meeting
 
 # different Worker-based classes.
 from .counter import Counter

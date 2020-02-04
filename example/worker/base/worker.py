@@ -1,17 +1,13 @@
 import thread_meeting
 
-import concurrent.futures
 import datetime
 import enum
 import inspect
 from overrides import EnforceOverrides
-import sys
 import time
-import traceback
 from typing import Optional
 
 from .decorators import transcribe_func, interruptable
-from .kill_executor import kill_executor
 from example.worker.message import Message
 from .worker_state import WorkerState
 
@@ -30,72 +26,6 @@ class FuncAndData:
 
 
 class Worker(EnforceOverrides):
-
-    # STATIC METHODS
-    @staticmethod
-    def execute_meeting(*args) -> None:
-        """
-        Launch all workers and wait for them to complete.
-        The first exception found is raised, if any.
-        :param args: Zero or more Worker-based objects to launch.
-        :return Nothing.
-        """
-        if 0 == len(args):
-            # A meeting with nobody in it.  Cancel it.
-            thread_meeting.transcribe("Canceled meeting with no attendees.")
-            return
-        workers = args
-
-        with concurrent.futures.ThreadPoolExecutor(
-                max_workers=len(args)) as executor:
-
-            # We MUST have the starting baton before creating workers,
-            # otherwise they WILL keep us from getting it.
-            baton = thread_meeting.primary_baton()
-            if not baton:
-                # Should NEVER happen!
-                raise RuntimeError("Could not get starting baton!")
-
-            futures = list()
-            workers_are_idle = True
-            for worker in workers:
-                # Start the worker
-                worker.meeting_members = workers
-                futures.append(executor.submit(worker.thread_entry))
-
-                # Wait for the worker to hit IDLE.
-                for i in range(30):
-                    state = worker.state
-                    if state == WorkerState.IDLE:
-                        break
-                    time.sleep(0.3)
-
-                if not WorkerState.IDLE == state:
-                    # If initialization takes more than 9 seconds, assume
-                    # something is wrong.  The Worker has likely generated
-                    # an exception.  We will catch it below.
-                    workers_are_idle = False
-                    break
-
-            if workers_are_idle:
-                baton.post(Message.START.value, None)  # OK, let's go!
-
-            # Now nothing to do but wait for the end.
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    future.result()
-                except BaseException as e:
-                    thread_meeting.transcribe(
-                        "Exception in primary thread")
-                    baton.post(Message.QUIT.value, None)
-                    raise
-                    exc_type, exc_value, exc_tb = sys.exc_info()
-                    tbe = traceback.TracebackException(
-                        exc_type, exc_value, exc_tb,
-                    )
-                    print(''.join(tbe.format()))
-                    thread_meeting.transcribe("Killing app: {}".format(e))
-                    kill_executor(executor)
 
     # CONSTRUCTOR AND PROPERTIES
     def __init__(self, *, name: str = '', enum_class: enum.Enum = Message):

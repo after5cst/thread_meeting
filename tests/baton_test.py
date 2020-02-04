@@ -7,7 +7,7 @@ _THIS_DIR = pathlib.Path(__file__).parent
 if __name__ == '__main__':
     sys.path.append(_THIS_DIR)
 
-from example.worker import Worker
+from example.worker import execute_meeting
 from example.worker import WorkerState
 # Worker-derived classes
 from example.worker import Counter
@@ -31,7 +31,7 @@ class BatonTest(unittest.TestCase):
         ]
 
         try:
-            Worker.execute_meeting(*workers)
+            execute_meeting(*workers)
             # If we get here, then we managed to start the workers,
             # sent a start message, and the workers exited.
             # So, we sent a message to the worker(s).
@@ -52,7 +52,7 @@ class BatonTest(unittest.TestCase):
                 recorder
             ]
             for i in range(2):
-                Worker.execute_meeting(*workers)
+                execute_meeting(*workers)
                 # If we get here, then we managed to start the workers,
                 # sent a start message, and the workers exited.
                 # So, we sent a message to the worker(s).
@@ -73,7 +73,7 @@ class BatonTest(unittest.TestCase):
             RaiseOnStart()
         ]
         with self.assertRaises(RuntimeError) as context:
-            Worker.execute_meeting(*workers)
+            execute_meeting(*workers)
         self.assertTrue("I crashed (on purpose)"
                         in str(context.exception), str(context.exception))
 
