@@ -17,9 +17,10 @@ public:
 
   std::unique_ptr<EnterExit> create_iterruptable_scope(pybind11::object);
   std::unique_ptr<EnterExit> request_baton();
-  std::unique_ptr<Keep> note(std::string name, pybind11::object payload);
+  std::unique_ptr<Keep> note(std::string name, pybind11::object payload,
+                             int delay_in_seconds);
 
-  void add_to_queue(Take::pointer_t take);
+  void add_to_queue(Take::pointer_t take, int delay_in_seconds);
 
   std::string name = std::string();
   PeekableQueue::pointer_t queue =
@@ -38,6 +39,10 @@ public:
   void push_interrupt_class(pybind11::object top) {
     m_interruptables.push(top);
   }
+
+  bool is_admin = false;
+  bool has_baton() const;
+  thread_id_t thread_id() const { return m_thread_id; }
 
 private:
   const thread_id_t m_thread_id = PyThread_get_thread_ident();

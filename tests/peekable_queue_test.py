@@ -1,3 +1,4 @@
+import time
 import unittest
 
 import thread_meeting
@@ -46,7 +47,41 @@ class PeekableQueueTest(unittest.TestCase):
                 q.get() # discard head
         self.check_empty(q)
         self.assertEqual(temp, i-1)
-        
+
+    def test_queue_priorities(self):
+        q = thread_meeting.PeekableQueue()
+        q.append(1, delay_in_sec=1)
+        q.append(2)
+        with thread_meeting.participate():
+            q.append(3)
+        self.assertEqual(q.get(), 2)
+        self.assertEqual(q.get(), 3)
+        self.check_empty(q)
+        time.sleep(1)
+        self.assertEqual(q.get(), 1)
+
+    def test_queue_purge(self):
+        q = thread_meeting.PeekableQueue()
+        q.append(1, delay_in_sec=1)
+        q.append(2)
+        with thread_meeting.participate("", is_admin=True):
+            q.append(3)
+        self.assertEqual(q.get(), 3)
+        self.check_empty(q)
+        time.sleep(1)
+        self.check_empty(q)
+
+    def test_queue_delays(self):
+        q = thread_meeting.PeekableQueue()
+        q.append(1, delay_in_sec=2)
+        q.append(2, delay_in_sec=1)
+        q.append(3, delay_in_sec=1)
+        self.check_empty(q)
+        time.sleep(2)
+        self.assertEqual(q.get(), 2)
+        self.assertEqual(q.get(), 3)
+        self.assertEqual(q.get(), 1)
+
 
 if __name__ == '__main__':
     unittest.main()

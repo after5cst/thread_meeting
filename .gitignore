@@ -41,4 +41,5 @@ pybind11Targets.cmake
 
 .vscode
 .idea/
+.eggs/
 /CMakeLists.txt.user

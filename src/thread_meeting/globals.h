@@ -42,6 +42,7 @@ typedef std::unordered_map<thread_id_t, std::shared_ptr<Attendee>> attendees_t;
 typedef std::unordered_map<thread_id_t, std::shared_ptr<PeekableQueue>>
     transcripts_t;
 
+extern std::weak_ptr<Attendee> g_admin;
 extern attendees_t g_attendees;
 extern std::weak_ptr<Baton> g_baton;
 extern thread_id_t g_initial_thread_id;

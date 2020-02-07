@@ -51,7 +51,7 @@ std::unique_ptr<Keep> Baton::post(std::string name, pybind11::object payload) {
     if (item.first != m_owner_thread_id) // We don't post to ourselves.
     {
       auto take = keep->create_take();
-      item.second->add_to_queue(take);
+      item.second->add_to_queue(take, 0);
     }
   }
   return keep;

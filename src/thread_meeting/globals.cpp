@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <sstream>
 
+std::weak_ptr<Attendee> g_admin;
 attendees_t g_attendees;
 std::weak_ptr<Baton> g_baton;
 thread_id_t g_initial_thread_id = 0;

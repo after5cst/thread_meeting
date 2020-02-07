@@ -14,11 +14,26 @@ AttendeeScope::pointer_t AttendeeScope::set_target() {
     throw std::runtime_error(msg);
   }
 
+  if (m_is_admin) {
+    if (auto admin = g_admin.lock()) {
+      auto msg = "Admin '" + admin->name + "' already present";
+      throw std::runtime_error(msg);
+    }
+  }
+
   auto target = std::make_shared<Attendee>();
   target->name = m_name;
+  target->is_admin = m_is_admin;
   attendee = target;
 
   std::stringstream sstr;
+  if (m_is_admin) {
+    g_admin = target;
+    sstr << "Admin Thread ID: ";
+  } else {
+    sstr << "Thread ID: ";
+  }
+
   sstr << "Thread ID: " << thread_id();
   transcribe(sstr.str(), TranscriptType::enter);
   return target;

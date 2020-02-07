@@ -42,10 +42,13 @@ the caller must use the Baton from request_baton().
 
 :param message: A string describing the note.
 :param payload: An optional object passed with the note.  Not commonly used.
+:param delay_in_sec: The minimum number of seconds before the item can
+        be picked up from the queue (defaults to zero).
 
 :return: The Keep object associated with the posted note.
 )pbdoc",
-        pybind11::arg("message"), pybind11::arg("payload") = pybind11::none());
+        pybind11::arg("message"), pybind11::arg("payload") = pybind11::none(),
+        pybind11::arg("delay_in_sec") = 0);
 
   o.def_property_readonly(
       "queue", [](const Attendee &a) { return pybind11::cast(a.queue); },
@@ -114,24 +117,31 @@ the Context Manager will return None on __enter__.
 )pbdoc");
 }
 
-void Attendee::add_to_queue(Take::pointer_t take) {
+void Attendee::add_to_queue(Take::pointer_t take, int delay_in_seconds) {
   auto thread_id = PyThread_get_thread_ident();
   auto trans_type =
       (thread_id == m_thread_id) ? TranscriptType::note : TranscriptType::post;
   transcribe(take->name, trans_type, m_thread_id);
-  queue->push(pybind11::cast(take));
+  queue->push(pybind11::cast(take), delay_in_seconds);
   if (!(thread_id == m_thread_id || m_interruptables.empty())) {
     auto top = m_interruptables.top();
     PyThreadState_SetAsyncExc(m_thread_id, top.ptr());
   }
 }
 
-std::unique_ptr<Keep> Attendee::note(std::string name,
-                                     pybind11::object payload) {
+bool Attendee::has_baton() const {
+  if (auto baton = g_baton.lock()) {
+    return m_thread_id == baton->get_owner_thead_id();
+  }
+  return false;
+}
+
+std::unique_ptr<Keep> Attendee::note(std::string name, pybind11::object payload,
+                                     int delay_in_seconds) {
   verify_python_thread_id(m_thread_id);
   auto keep = std::make_unique<Keep>(name, payload);
   auto take = keep->create_take();
-  add_to_queue(take);
+  add_to_queue(take, delay_in_seconds);
   return keep;
 }
 

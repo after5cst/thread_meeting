@@ -15,8 +15,9 @@ pybind11::object primary_baton() {
   return pybind11::none();
 }
 
-std::unique_ptr<EnterExit> participate(std::string attendee_name) {
-  return std::make_unique<AttendeeScope>(attendee_name);
+std::unique_ptr<EnterExit> participate(std::string attendee_name,
+                                       bool is_admin) {
+  return std::make_unique<AttendeeScope>(attendee_name, is_admin);
 }
 
 pybind11::object me() {
@@ -45,7 +46,7 @@ pybind11::object transcribe(std::string message, TranscriptType transcript_type,
       pybind11::cast(TranscriptItem(message, transcript_type, destination));
 
   for (auto &transcript : g_transcripts) {
-    transcript.second->push(item);
+    transcript.second->push(item, 0, false);
   }
   return item;
 }
@@ -96,10 +97,13 @@ who has the Baton.
 :param attendee_name: The requested name of the attendee.  If the name
     is a duplicate, a numeric suffix will be added to make it unique.
 
+:param is_admin: If True, the Attendee wants to be the meeting admin.
+    Only one admin is allowed per meeting.
+
 :return: A Context Manager that will provide an Attendee on entry and
     invalidate the attendee on exit.
 )pbdoc",
-        pybind11::arg("attendee_name") = "");
+        pybind11::arg("attendee_name") = "", pybind11::arg("is_admin") = false);
 
   m.def("me", &me,
         R"pbdoc(
