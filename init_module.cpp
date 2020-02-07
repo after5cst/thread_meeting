@@ -3,7 +3,7 @@
 #include "src/thread_meeting/enter_exit.h"
 #include "src/thread_meeting/functions.h"
 #include "src/thread_meeting/keep.h"
-#include "src/thread_meeting/peekable_queue.h"
+#include "src/thread_meeting/priority_queue.h"
 #include "src/thread_meeting/take.h"
 #include "src/thread_meeting/transcript_item.h"
 
@@ -23,7 +23,7 @@ PYBIND11_MODULE(thread_meeting, m) {
            Attendee
            Baton
            Keep
-           PeekableQueue
+           PriorityQueue
            Take
            TakeStatus
            TranscriptItem
@@ -45,7 +45,7 @@ PYBIND11_MODULE(thread_meeting, m) {
   Keep::bind(m);
   Take::bind(m);
   TranscriptItem::bind(m);
-  PeekableQueue::bind(m);
+  PriorityQueue::bind(m);
 
   // If the initial thread ID (presumably main) hasn't been set,
   // then set it to whatever we have right now.  If you import

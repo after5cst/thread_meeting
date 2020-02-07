@@ -13,8 +13,7 @@ TranscriptScope::pointer_t TranscriptScope::set_target() {
     return nullptr;
   }
 
-  auto target =
-      std::make_shared<PeekableQueue>(PeekableQueue::Options::disable_append);
+  auto target = std::make_shared<PriorityQueue>();
   transcript = target;
 
   // Normally, you should use the global function transcribe() to add
@@ -24,7 +23,7 @@ TranscriptScope::pointer_t TranscriptScope::set_target() {
   auto item =
       pybind11::cast(TranscriptItem("Transcript", TranscriptType::enter));
 
-  transcript->push(item, 0, false);
+  transcript->push_low(item);
 
   return target;
 }
@@ -34,7 +33,7 @@ void TranscriptScope::clear_target(pointer_t &target) {
     // See set_target() for explanation why transcribe() is not used.
     auto item =
         pybind11::cast(TranscriptItem("Transcript", TranscriptType::exit));
-    target->push(item, 0, false);
+    target->push_low(item);
     g_transcripts.erase(thread_id());
     target.reset();
   }

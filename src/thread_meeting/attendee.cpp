@@ -48,12 +48,12 @@ the caller must use the Baton from request_baton().
 :return: The Keep object associated with the posted note.
 )pbdoc",
         pybind11::arg("message"), pybind11::arg("payload") = pybind11::none(),
-        pybind11::arg("delay_in_sec") = 0);
+        pybind11::arg("delay_in_sec") = 0.0);
 
   o.def_property_readonly(
       "queue", [](const Attendee &a) { return pybind11::cast(a.queue); },
       R"pbdoc(
-The PeekableQueue for the Attendee.
+The PriorityQueue for the Attendee.
 
 The queue contains messages sent to the Attendee either via the note()
 method (within the Attendee's thread) or the Baton.post() method (from
@@ -117,12 +117,34 @@ the Context Manager will return None on __enter__.
 )pbdoc");
 }
 
-void Attendee::add_to_queue(Take::pointer_t take, int delay_in_seconds) {
+void Attendee::add_to_queue(Take::pointer_t take, float delay_in_seconds) {
   auto thread_id = PyThread_get_thread_ident();
-  auto trans_type =
-      (thread_id == m_thread_id) ? TranscriptType::note : TranscriptType::post;
+  auto trans_type = TranscriptType::post_low;
+  auto priority = Priority::low;
+  if (0 < delay_in_seconds) {
+    trans_type = TranscriptType::post_future;
+    priority = Priority::future;
+  } else {
+    trans_type = TranscriptType::post_high;
+    priority = Priority::high;
+  }
+
   transcribe(take->name, trans_type, m_thread_id);
-  queue->push(pybind11::cast(take), delay_in_seconds);
+  auto python_take = pybind11::cast(take);
+  switch (priority) {
+  case Priority::future:
+    queue->push_future(python_take, delay_in_seconds);
+    break;
+  case Priority::high:
+    queue->push_high(python_take);
+    break;
+  case Priority::low:
+    queue->push_low(python_take);
+    break;
+  }
+
+  // The message has been pushed.  Now, fire an exception on the
+  // target Python thread if they have an interruptable to fire.
   if (!(thread_id == m_thread_id || m_interruptables.empty())) {
     auto top = m_interruptables.top();
     PyThreadState_SetAsyncExc(m_thread_id, top.ptr());
@@ -137,7 +159,7 @@ bool Attendee::has_baton() const {
 }
 
 std::unique_ptr<Keep> Attendee::note(std::string name, pybind11::object payload,
-                                     int delay_in_seconds) {
+                                     float delay_in_seconds) {
   verify_python_thread_id(m_thread_id);
   auto keep = std::make_unique<Keep>(name, payload);
   auto take = keep->create_take();

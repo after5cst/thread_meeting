@@ -46,7 +46,7 @@ pybind11::object transcribe(std::string message, TranscriptType transcript_type,
       pybind11::cast(TranscriptItem(message, transcript_type, destination));
 
   for (auto &transcript : g_transcripts) {
-    transcript.second->push(item, 0, false);
+    transcript.second->push_low(item);
   }
   return item;
 }
@@ -61,6 +61,12 @@ void bind_functions(pybind11::module &m) {
       .value(as_string(MessageStatus::protested), MessageStatus::protested,
              "Message was picked up by queue owner and owner protested");
 
+  pybind11::enum_<Priority>(m, "Priority", pybind11::arithmetic())
+      .value(as_string(Priority::future), Priority::future,
+             "Item to be processed in the future")
+      .value(as_string(Priority::high), Priority::high, "High priority item")
+      .value(as_string(Priority::low), Priority::low, "Low priority item");
+
   pybind11::enum_<TranscriptType>(m, "TranscriptType", pybind11::arithmetic())
       .value(as_string(TranscriptType::ack), TranscriptType::ack,
              "Positive acknowledgement of entry")
@@ -74,10 +80,13 @@ void bind_functions(pybind11::module &m) {
              "Entry notes the end of element in message")
       .value(as_string(TranscriptType::nack), TranscriptType::nack,
              "Negative acknowledgement of entry")
-      .value(as_string(TranscriptType::note), TranscriptType::note,
-             "Entry notes queue item posted by the queue owner")
-      .value(as_string(TranscriptType::post), TranscriptType::post,
-             "Entry notes queue item posted by a non-queue owner")
+      .value(as_string(TranscriptType::post_future),
+             TranscriptType::post_future,
+             "Entry notes queue item posted for future processing")
+      .value(as_string(TranscriptType::post_high), TranscriptType::post_high,
+             "Entry notes high priority queue item posted")
+      .value(as_string(TranscriptType::post_low), TranscriptType::post_low,
+             "Entry notes low priority queue item posted")
       .value(as_string(TranscriptType::recv), TranscriptType::recv,
              "Entry has been received")
       .value(as_string(TranscriptType::state), TranscriptType::state,
@@ -153,6 +162,6 @@ This context manager provides a queue where every TranscriptItem
 will be placed for the life of the context manager.
 
 :return: A Context Manager that will provide the Transcript
-        for the meeting, which is a PeekableQueue.
+        for the meeting, which is a queue.
 )pbdoc");
 }

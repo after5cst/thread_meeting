@@ -24,6 +24,19 @@ const char *as_string(const MessageStatus &status) {
   return "";
 }
 
+const char *as_string(const Priority &priority) {
+  switch (priority) {
+  case Priority::future:
+    return "Future";
+  case Priority::high:
+    return "High";
+  case Priority::low:
+    return "Low";
+  }
+  assert(false);
+  return "";
+}
+
 const char *as_string(const TranscriptType &trans_type) {
   switch (trans_type) {
   case TranscriptType::ack:
@@ -38,9 +51,11 @@ const char *as_string(const TranscriptType &trans_type) {
     return "Exit";
   case TranscriptType::nack:
     return "Nack";
-  case TranscriptType::note:
-    return "Note";
-  case TranscriptType::post:
+  case TranscriptType::post_future:
+    return "Future";
+  case TranscriptType::post_high:
+    return "High";
+  case TranscriptType::post_low:
     return "Post";
   case TranscriptType::recv:
     return "Recv";

@@ -21,7 +21,7 @@ typedef long thread_id_t;
 
 class Attendee;
 class Baton;
-class PeekableQueue;
+class PriorityQueue;
 
 enum class TranscriptType {
   ack,
@@ -30,16 +30,18 @@ enum class TranscriptType {
   enter,
   exit,
   nack,
-  note,
-  post,
+  post_future,
+  post_high,
+  post_low,
   recv,
   send,
   state
 };
 enum class MessageStatus { pending, acknowledged, protested };
+enum class Priority { future, low, high };
 
 typedef std::unordered_map<thread_id_t, std::shared_ptr<Attendee>> attendees_t;
-typedef std::unordered_map<thread_id_t, std::shared_ptr<PeekableQueue>>
+typedef std::unordered_map<thread_id_t, std::shared_ptr<PriorityQueue>>
     transcripts_t;
 
 extern std::weak_ptr<Attendee> g_admin;
@@ -49,7 +51,8 @@ extern thread_id_t g_initial_thread_id;
 extern transcripts_t g_transcripts;
 
 const char *as_string(const MessageStatus &status);
-const char *as_string(const TranscriptType &status);
+const char *as_string(const Priority &priority);
+const char *as_string(const TranscriptType &transcript_type);
 
 std::string verify_thread_name(std::string suggested_name = std::string(),
                                thread_id_t thread_id = 0);

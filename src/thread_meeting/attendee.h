@@ -7,7 +7,7 @@
 
 #include "baton_scope.h"
 #include "keep.h"
-#include "peekable_queue.h"
+#include "priority_queue.h"
 #include "take.h"
 
 class Attendee : public std::enable_shared_from_this<Attendee> {
@@ -18,13 +18,12 @@ public:
   std::unique_ptr<EnterExit> create_iterruptable_scope(pybind11::object);
   std::unique_ptr<EnterExit> request_baton();
   std::unique_ptr<Keep> note(std::string name, pybind11::object payload,
-                             int delay_in_seconds);
+                             float delay_in_seconds);
 
-  void add_to_queue(Take::pointer_t take, int delay_in_seconds);
+  void add_to_queue(Take::pointer_t take, float delay_in_seconds);
 
   std::string name = std::string();
-  PeekableQueue::pointer_t queue =
-      std::make_shared<PeekableQueue>(PeekableQueue::Options::disable_append);
+  PriorityQueue::pointer_t queue = std::make_shared<PriorityQueue>();
   bool valid = true;
 
   pybind11::object pop_interrupt_class() {

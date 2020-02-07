@@ -1,10 +1,10 @@
 #ifndef _TRANSCIPTION_SCOPE
 #define _TRANSCIPTION_SCOPE
 #include "enter_exit.h"
-#include "peekable_queue.h"
+#include "priority_queue.h"
 
-class TranscriptScope : public EnterExitImpl<PeekableQueue> {
-  typedef EnterExitImpl<PeekableQueue> baseclass;
+class TranscriptScope : public EnterExitImpl<PriorityQueue> {
+  typedef EnterExitImpl<PriorityQueue> baseclass;
 
 public:
   virtual pointer_t set_target() override;
