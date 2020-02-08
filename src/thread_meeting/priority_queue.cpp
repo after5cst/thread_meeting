@@ -115,9 +115,11 @@ pybind11::object PriorityQueue::get(bool purge_if_high) {
       ++items_dropped;
       m_future_q.pop();
     }
-    std::stringstream sstr;
-    sstr << "Purged: " << items_dropped << " items";
-    transcribe(sstr.str(), TranscriptType::debug);
+    if (items_dropped) {
+      std::stringstream sstr;
+      sstr << "Purged: " << items_dropped << " items";
+      transcribe(sstr.str(), TranscriptType::debug);
+    }
   }
   return result;
 }
