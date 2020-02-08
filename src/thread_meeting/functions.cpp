@@ -30,13 +30,6 @@ pybind11::object me() {
   return result;
 }
 
-// Provided since Python doesn't need access to destination.
-pybind11::object python_transcribe(std::string message,
-                                   TranscriptType transcript_type) {
-  auto result = transcribe(message, transcript_type, 0);
-  return result;
-}
-
 pybind11::object transcribe(std::string message, TranscriptType transcript_type,
                             thread_id_t destination) {
   if (0 == g_transcripts.size()) {
@@ -139,7 +132,7 @@ take the starting baton.
 :return: The Baton object or None.
 )pbdoc");
 
-  m.def("transcribe", &python_transcribe,
+  m.def("transcribe", &transcribe,
         R"pbdoc(
 Add an entry to the Transcript.
 
@@ -147,11 +140,14 @@ Add an entry to the Transcript.
         Message field.
 :param ti_type: The TranscriptType to add to the transcript
         in the ti_type field.
+:param destination_id: The thread ident() for the thread receiving
+        the message.  Normally does not need to be provided.
 
 :return: The TranscriptItem added to the Transcript.
 )pbdoc",
         pybind11::arg("message"),
-        pybind11::arg("ti_type") = TranscriptType::custom);
+        pybind11::arg("ti_type") = TranscriptType::custom,
+        pybind11::arg("destination_id") = 0);
 
   m.def("transcriber", &transcriber,
         R"pbdoc(
