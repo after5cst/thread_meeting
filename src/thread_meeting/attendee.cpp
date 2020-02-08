@@ -124,7 +124,7 @@ void Attendee::add_to_queue(Take::pointer_t take, float delay_in_seconds) {
   if (0 < delay_in_seconds) {
     trans_type = TranscriptType::post_future;
     priority = Priority::future;
-  } else {
+  } else if (thread_id != m_thread_id) {
     trans_type = TranscriptType::post_high;
     priority = Priority::high;
   }

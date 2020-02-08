@@ -17,7 +17,7 @@ public:
   void push_high(pybind11::object obj);
   void push_low(pybind11::object obj);
   void push_future(pybind11::object obj, float delay_in_seconds);
-  pybind11::object get(bool purge_lower);
+  pybind11::object get(bool purge_if_high);
 
 private:
   struct low_t {

@@ -132,11 +132,11 @@ class AttendeeTest(unittest.TestCase):
             self.assertFalse(queue)
             thread_meeting.me().note("one", 1)
             self.assertTrue(queue)
-            self.assertIsInstance(queue.head, thread_meeting.Take)
-            self.assertEqual(queue.head.payload, 1)
-            self.assertEqual(queue.head.name, "one")
-            self.assertEqual(queue.get().payload, 1)
+            head = queue.get()
             self.assertFalse(queue)
+            self.assertIsInstance(head, thread_meeting.Take)
+            self.assertEqual(head.payload, 1)
+            self.assertEqual(head.name, "one")
 
 
 if __name__ == '__main__':

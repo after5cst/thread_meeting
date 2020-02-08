@@ -124,8 +124,8 @@ class BasicTranscriptTest(unittest.TestCase):
         expected = (
             TI('Transcript', TT.Enter),
             TI('Thread ID:', TT.Enter),
-            TI('Ring', TT.Note),
-            TI('Sword', TT.Note),
+            TI('Ring', TT.Post),
+            TI('Sword', TT.Post),
             TI('Ring', TT.Nack),
             TI('Thread ID:', TT.Exit),
             TI('Sword', TT.Ack),

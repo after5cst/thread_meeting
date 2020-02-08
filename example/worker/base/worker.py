@@ -287,7 +287,7 @@ class Worker(EnforceOverrides):
                 type(message), self._Message))
         self._attendee.note(message.value, payload)
 
-    def _queue(self) -> thread_meeting.PeekableQueue:
+    def _queue(self) -> thread_meeting.PriorityQueue:
         """
         Return the Attendee queue object.
         If the Attendee is invalid, raise an error.

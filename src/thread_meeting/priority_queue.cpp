@@ -43,10 +43,11 @@ Add an item to the queue.
         R"pbdoc(
 Pop an item off the queue and return it.
 
-:param purge_lower: If True, any items in the queue of lower priority
-    than the one fetched will be purged.
+:param purge_if_high: If True and the item fetched is of high priority,
+    purge any low or future items from the queue.
 :returns: The item, or None if the queue was empty.
-)pbdoc");
+)pbdoc",
+        pybind11::arg("purge_if_high") = true);
 
   o.def("__bool__", [](PriorityQueue &a) { return !a.empty(); },
         R"pbdoc(
@@ -91,7 +92,7 @@ bool PriorityQueue::empty() {
   return m_high_q.empty() && m_low_q.empty();
 }
 
-pybind11::object PriorityQueue::get(bool purge_lower) {
+pybind11::object PriorityQueue::get(bool purge_if_high) {
   pybind11::object result = pybind11::none();
   auto priority = Priority::low;
   if (!empty()) {
@@ -106,21 +107,17 @@ pybind11::object PriorityQueue::get(bool purge_lower) {
     }
   }
 
-  if (purge_lower) {
+  if (purge_if_high && Priority::high == priority) {
     auto items_dropped = 0U;
-    switch (priority) {
-    case Priority::high:
-      items_dropped += m_low_q.size();
-      // fall through!
-    case Priority::low:
-      while (!m_future_q.empty()) {
-        ++items_dropped;
-        m_future_q.pop();
-      }
-      // fall through!
-    case Priority::future:
-      break;
+    items_dropped += m_low_q.size();
+    m_low_q.clear();
+    while (!m_future_q.empty()) {
+      ++items_dropped;
+      m_future_q.pop();
     }
+    std::stringstream sstr;
+    sstr << "Purged: " << items_dropped << " items";
+    transcribe(sstr.str(), TranscriptType::debug);
   }
   return result;
 }
