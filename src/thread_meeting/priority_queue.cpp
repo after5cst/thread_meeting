@@ -1,5 +1,6 @@
 #include "priority_queue.h"
 #include "attendee.h"
+#include "take.h"
 
 #include <sstream>
 
@@ -108,17 +109,26 @@ pybind11::object PriorityQueue::get(bool purge_if_high) {
   }
 
   if (purge_if_high && Priority::high == priority) {
-    auto items_dropped = 0U;
-    items_dropped += m_low_q.size();
-    m_low_q.clear();
+
+    std::vector<pybind11::object> dropped;
+    while (!m_low_q.empty()) {
+      dropped.push_back(m_low_q.front());
+      m_low_q.pop_front();
+    }
     while (!m_future_q.empty()) {
-      ++items_dropped;
+      dropped.push_back(m_future_q.top().what);
       m_future_q.pop();
     }
-    if (items_dropped) {
-      std::stringstream sstr;
-      sstr << "Purged: " << items_dropped << " items";
-      transcribe(sstr.str(), TranscriptType::debug);
+
+    for (const auto &item : dropped) {
+      auto take = pybind11::cast<Take *>(item);
+      if (take) {
+        // Takes will note a completion, we don't have to transcribe it.
+        // But we do want to NAK it so it shows up as not processed.
+        take->protest();
+      } else {
+        transcribe(pybind11::str(item), TranscriptType::drop);
+      }
     }
   }
   return result;

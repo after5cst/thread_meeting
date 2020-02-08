@@ -74,6 +74,8 @@ void bind_functions(pybind11::module &m) {
              "Entry is of unknown (script-generated) type")
       .value(as_string(TranscriptType::debug), TranscriptType::debug,
              "Entry is a debug message")
+      .value(as_string(TranscriptType::drop), TranscriptType::drop,
+             "Entry notes a dropped message")
       .value(as_string(TranscriptType::enter), TranscriptType::enter,
              "Entry notes the start of element in message")
       .value(as_string(TranscriptType::exit), TranscriptType::exit,

@@ -27,6 +27,7 @@ enum class TranscriptType {
   ack,
   custom,
   debug,
+  drop,
   enter,
   exit,
   nack,

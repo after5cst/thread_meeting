@@ -45,6 +45,8 @@ const char *as_string(const TranscriptType &trans_type) {
     return "Custom";
   case TranscriptType::debug:
     return "Debug";
+  case TranscriptType::drop:
+    return "Drop";
   case TranscriptType::enter:
     return "Enter";
   case TranscriptType::exit:
